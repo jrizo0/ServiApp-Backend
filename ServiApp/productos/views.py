@@ -1,15 +1,12 @@
-from django.http import JsonResponse
-from django.core import serializers
-
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from .models import Producto
+from .serializers import ProductoSerializer
 
+@api_view(['GET'])
 def getProductos(request):
-    data = list(Producto.objects.values())
-    # data = serializers.serialize("json", Producto.objects.all())
-    # data = {
-    #     'name': 'Vitor',
-    #     'location': 'Finland',
-    #     'is_active': True,
-    #     'count': 28
-    # }
-    return JsonResponse(data, safe=False)
+    productos = Producto.objects.all()
+    serializer = ProductoSerializer(productos, many=True)
+    return Response(serializer.data)
+
+
