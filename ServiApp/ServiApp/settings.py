@@ -90,6 +90,7 @@ DATABASES = {
         # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'mssql',
         'NAME': 'test',
+        # 'NAME': 'ServiciosAlimentacion',
         'USER': 'sa',
         'PASSWORD': 'Password1234!',
         'HOST': '127.0.0.1',
