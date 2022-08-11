@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('imagen', models.CharField(max_length=200)),
                 ('precio', models.DecimalField(decimal_places=0, max_digits=20)),
                 ('stock', models.DecimalField(decimal_places=0, max_digits=20)),
-                ('restaurante', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='restaurantes.restaurante')),
+                # ('restaurante', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='restaurantes.restaurante')),
             ],
         ),
     ]

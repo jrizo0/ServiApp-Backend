@@ -1,8 +1,13 @@
 from rest_framework import serializers
-from .models import Restaurante
+from .models import Tarifav, Tarifa
 
-class RestauranteSerializer(serializers.ModelSerializer):
+class TarifavSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Restaurante
+        model = Tarifav
+        fields = '__all__'
+
+class TarifaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tarifa
         fields = '__all__'
 

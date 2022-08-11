@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Restaurante
+from .models import Tarifav, Tarifa
 
-admin.site.register(Restaurante)
+admin.site.register(Tarifav)
+admin.site.register(Tarifa)
 
