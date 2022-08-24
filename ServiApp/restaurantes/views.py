@@ -1,80 +1,46 @@
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from .models import Tarifav, Tarifa
 from .serializers import TarifavSerializer, TarifaSerializer
 
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from django.core.cache import cache
+from rest_framework.viewsets import ModelViewSet
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
+
+import requests
+import json 
+
 #Tarifav === Restaurante
 
-@api_view(['GET'])
-def getTarifasv(request):
-    tarifasv = Tarifav.objects.all()
-    serializer = TarifavSerializer(tarifasv, many=True)
-    return Response(serializer.data)
+class RestauranteViewSet(ModelViewSet):
+    serializer_class = TarifavSerializer
+    queryset = Tarifav.objects.all()
+    lookup_field = "idtarifav"
+    http_method_names = ['get', 'post', 'put', 'delete']
 
-@api_view(['GET'])
-def getTarifasvId(request, id):
-    tarifasv = Tarifav.objects.get(id=id)
-    serializer = TarifavSerializer(tarifasv)
-    return Response(serializer.data)
-
-@api_view(['POST'])
-def postTarifasv(request):
-    serializer = TarifavSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(60*1))
+    def list(self, request):
+        response = {}
+        res = requests.get('http://127.0.0.1:8000/api/restaurantes')
+        if res.status_code != 200:
+            response['status'] = res.status_code
+            response['message'] = 'error en la llamada'
+            return Response(response)
+        data = res.json()
+        serializer = TarifavSerializer(data=data, many=True)
+        serializer.is_valid()
+        # TODO: compara con la bd los pk
+        # return Response(serializer.validated_data)
         return Response(serializer.data)
-    return Response(serializer.errors)
+            
 
-@api_view(['PUT'])
-def putTarifasv(request, id):
-    tarifasv = Tarifav.objects.get(id=id)
-    serializer = TarifavSerializer(instance=tarifasv, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors)
-
-@api_view(['DELETE'])
-def deleteTarifasv(request, id):
-    tarifasv = Tarifav.objects.get(id=id)
-    tarifasv.delete()
-    return Response('Tarifav eliminado')
-
-
-
-@api_view(['GET'])
-def getTarifas(request):
-    tarifas = Tarifa.objects.all()
-    serializer = TarifaSerializer(tarifas, many=True)
-    return Response(serializer.data)
-
-@api_view(['GET'])
-def getTarifa(request, pk):
-    tarifa = Tarifa.objects.get(pk=pk)
-    serializer = TarifaSerializer(tarifa)
-    return Response(serializer.data)
-
-@api_view(['POST'])
-def createTarifa(request):
-    serializer = TarifaSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors)
-
-@api_view(['PUT'])
-def updateTarifa(request, pk):
-    tarifa = Tarifa.objects.get(pk=pk)
-    serializer = TarifaSerializer(instance=tarifa, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors)
-
-@api_view(['DELETE'])
-def deleteTarifa(request, pk):
-    tarifa = Tarifa.objects.get(pk=pk)
-    tarifa.delete()
-    return Response('Tarifa eliminada')
+    # @method_decorator(vary_on_cookie)
+    # @method_decorator(cache_page(60*1))
+    # def dispatch(self, *args, **kwargs):
+    #     return super(RestauranteViewSet, self).dispatch(*args, **kwargs)
 
 
