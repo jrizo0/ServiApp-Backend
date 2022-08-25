@@ -16,11 +16,6 @@ class Tarifa(models.Model):
     class Meta:
         managed = False
         db_table = 'TARIFA'
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=['idtarifav', 'codarticulo'], name='unique_tarifav_articulo_combination'
-        #     )
-        # ]
         unique_together = (('idtarifav', 'codarticulo'),)
 
 
