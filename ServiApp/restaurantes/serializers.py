@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Tarifav, Tarifa
 
+
 class TarifavSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tarifav
