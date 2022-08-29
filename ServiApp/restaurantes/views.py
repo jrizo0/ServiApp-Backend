@@ -1,3 +1,4 @@
+from rest_framework.views import APIView
 from .models import Tarifav, Tarifa
 from .serializers import TarifavSerializer, TarifaSerializer
 
@@ -13,6 +14,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
+from ServiApp.firebase import db, storage
+
 
 """
 Categorias: 
@@ -26,11 +29,11 @@ categoria_almuerzo = [3, 11, 15, 20, 121, 124, 125, 127]
 categoria_comida_rapida = [3, 13, 14, 15, 20]
 
 
-class RestauranteViewSet(ModelViewSet):
-    serializer_class = TarifavSerializer
-    queryset = Tarifav.objects.all()
-    lookup_field = "idtarifav"
-    http_method_names = ["get", "post", "put", "delete"]
+class RestauranteViewSet(APIView):
+    # serializer_class = TarifavSerializer
+    # queryset = Tarifav.objects.all()
+    # lookup_field = "idtarifav"
+    # http_method_names = ["get", "post", "put", "delete"]
 
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60 * 1))
@@ -40,18 +43,21 @@ class RestauranteViewSet(ModelViewSet):
         except requests.exceptions.RequestException as e:
             response = {"status": 400, "message": e.__str__()}
             return Response(response)
+
         data = res.json()
         serializer = TarifavSerializer(data, many=True)
-        #TODO: or model sin pk, or objects (pk error)
+        # TODO: or model sin pk, or objects (pk error)
+
         return Response(serializer.data)
 
-    #TODO: list by categorias, guardar categorias?
+    # TODO: list by categorias, guardar categorias?
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60 * 1))
     @action(detail=False, methods=["GET"])
     def comidarapida(self, request, *args, **kwargs):
         queryset = Tarifav.objects.filter(idtarifav__in=categoria_comida_rapida)
         serializer = TarifavSerializer(queryset, many=True)
+
         return Response(serializer.data)
 
     # @method_decorator(vary_on_cookie)
