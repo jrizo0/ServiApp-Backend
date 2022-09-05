@@ -1,61 +1,60 @@
-from rest_framework.views import APIView
+from rest_framework import viewsets
+from rest_framework import mixins
 from .models import Tarifav, Tarifa
 from .serializers import TarifavSerializer, TarifaSerializer
 
 import requests
-import json
+# import json
 
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, action
-from django.core.cache import cache
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+# from django.core.cache import cache
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
-from ServiApp.firebase import db, storage
+from ServiApp.firebase import db
+from django.conf import settings
+
+API_Restaurantes = settings.SA_API_URL + "/restaurantes/"
 
 
-"""
-Categorias: 
-    1. Almuerzo
-    2. Comida rapida
-RestaurantesXCategoria:
-    1 -> [3, 11, 15, 20, 121, 124, 125, 127]
-    2 -> [3, 13, 14, 15, 20]
-"""
-categoria_almuerzo = [3, 11, 15, 20, 121, 124, 125, 127]
-categoria_comida_rapida = [3, 13, 14, 15, 20]
+# NOTE: No se puede @api_view por cache solo se puede con clases), 
+class RestauranteAPIView(
+    mixins.ListModelMixin,
+    # mixins.CreateModelMixin,
+    # mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
 
-
-class RestauranteViewSet(APIView):
-    # serializer_class = TarifavSerializer
-    # queryset = Tarifav.objects.all()
-    # lookup_field = "idtarifav"
-    # http_method_names = ["get", "post", "put", "delete"]
-
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(60 * 1))
-    def list(self, request):
+    def get_queryset(self):
         try:
-            res = requests.get("http://127.0.0.1:8000/api/restaurantes")
+            res = requests.get(API_Restaurantes)
         except requests.exceptions.RequestException as e:
             response = {"status": 400, "message": e.__str__()}
             return Response(response)
 
         data = res.json()
         serializer = TarifavSerializer(data, many=True)
-        # TODO: or model sin pk, or objects (pk error)
 
-        return Response(serializer.data)
+        return serializer.data
+
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(60 * 1))
+    def list(self, request):
+        return Response(self.get_queryset())
 
     # TODO: list by categorias, guardar categorias?
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60 * 1))
     @action(detail=False, methods=["GET"])
-    def comidarapida(self, request, *args, **kwargs):
-        queryset = Tarifav.objects.filter(idtarifav__in=categoria_comida_rapida)
+    def list_category(self, request, id_category):
+        category_db_name = "restaurantes-categoria-" + str(id_category)
+        db_data = db.child(category_db_name).get().val()
+        rests_in_category = list(db_data)
+
+        queryset = Tarifav.objects.filter(idtarifav__in=list(rests_in_category))
         serializer = TarifavSerializer(queryset, many=True)
 
         return Response(serializer.data)

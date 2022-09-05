@@ -42,6 +42,7 @@ RestaurantesXCategoria:
 #     db.child("restaurantes-categoria-2").child(r).set("")
 
 # data = db.child("restaurantes-categoria-1").get()
+# print(data.val())
 # for r in list(data.val()):
 #     print(r)
 
