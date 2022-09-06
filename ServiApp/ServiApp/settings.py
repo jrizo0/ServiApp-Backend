@@ -92,20 +92,25 @@ SA_API_URL = "http://127.0.0.1:8000/api"
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': BASE_DIR / 'db.sqlite3',
-        'ENGINE': 'mssql',
-        # 'NAME': 'test',
-        'NAME': 'ServiciosAlimentacion',
-        'USER': 'sa',
-        'PASSWORD': 'Password1234!',
-        'HOST': '127.0.0.1',
-        'PORT': '',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': 'test',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'mssql',
+#         'NAME': 'ServiciosAlimentacion',
+#         'USER': 'sa',
+#         'PASSWORD': 'Password1234!',
+#         'HOST': '127.0.0.1',
+#         'PORT': '',
+#         'OPTIONS': {
+#             'driver': 'ODBC Driver 17 for SQL Server',
+#         },
+#     }
+# }
 
 CACHES = {
     "default": {

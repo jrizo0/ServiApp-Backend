@@ -7,9 +7,6 @@ class TarifavObject:
         self.idtarifav = idtarifav
         self.descripcion = descripcion
 
-    class Meta:
-        managed = False
-
 class TarifaObject:
     def __init__(self, idtarifav, codarticulo, precio):
         self.idtarifav = idtarifav

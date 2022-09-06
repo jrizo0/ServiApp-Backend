@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework import mixins
-from .models import Tarifav, Tarifa
-from .serializers import TarifavSerializer, TarifaSerializer
+# from .models import Tarifav, Tarifa
+# from .serializers import TarifavSerializer, TarifaSerializer
 
 import requests
 # import json
@@ -16,6 +16,8 @@ from django.views.decorators.vary import vary_on_cookie
 
 from ServiApp.firebase import db
 from django.conf import settings
+
+# from .objects import TarifaObject, TarifavObject
 
 API_Restaurantes = settings.SA_API_URL + "/restaurantes/"
 
@@ -34,30 +36,26 @@ class RestauranteAPIView(
         except requests.exceptions.RequestException as e:
             response = {"status": 400, "message": e.__str__()}
             return Response(response)
-
-        data = res.json()
-        serializer = TarifavSerializer(data, many=True)
-
-        return serializer.data
+        return res.json()
 
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60 * 1))
     def list(self, request):
         return Response(self.get_queryset())
 
-    # TODO: list by categorias, guardar categorias?
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60 * 1))
     @action(detail=False, methods=["GET"])
     def list_category(self, request, id_category):
-        category_db_name = "restaurantes-categoria-" + str(id_category)
-        db_data = db.child(category_db_name).get().val()
-        rests_in_category = list(db_data)
+        db_query = db.collection('restaurantes').where('categoria', '==', str(id_category)).get()
 
-        queryset = Tarifav.objects.filter(idtarifav__in=list(rests_in_category))
-        serializer = TarifavSerializer(queryset, many=True)
+        rests_in_category = []
+        for doc in db_query:
+            doc_id = {'id': doc.id}
+            doc_id.update(doc.to_dict())
+            rests_in_category.append(doc_id)
 
-        return Response(serializer.data)
+        return Response(rests_in_category)
 
     # @method_decorator(vary_on_cookie)
     # @method_decorator(cache_page(60*1))
