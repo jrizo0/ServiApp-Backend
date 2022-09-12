@@ -1,8 +1,12 @@
 from django.urls import path
 
-from . import views
+from .views import UsuarioAPIView
 
 app_name = 'usuarios'
+
+usu_get = UsuarioAPIView.as_view({"get": "retrieve"})
+
 urlpatterns = [
-    path('get/', views.getClientes, name='getClientes'),
+    path("", usu_get),
+    # path('get/', views.getClientes, name='getClientes'),
 ]

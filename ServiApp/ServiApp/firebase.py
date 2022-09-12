@@ -41,15 +41,28 @@
 
 
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth
+from django.conf import settings
 
 if not firebase_admin._apps:
-    # print("Initializing firebase_admin app...")
-    cred = credentials.Certificate("serviceAccountKey.json")
+    cred = credentials.Certificate(settings.FIREBASE_SETTINGS)
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
+def fb_valid_req_token(request):
+    try:
+        auth_token = request.META.get('HTTP_AUTHORIZATION')
+        token = auth_token.replace("Bearer ", "")
+        print(token)
+        decoded_token = auth.verify_id_token(token)
+        firebase_user_id = decoded_token['user_id']
+        print(firebase_user_id)
+        return True
+    except:
+        return False
+    
+        
 # data = {'nombre': 'MIRADOR', 'descripcion': 'Descripcion del mirador', 'categoria': '1'}
 # db.collection('restaurantes').document('11').set(data)
 
@@ -57,9 +70,9 @@ db = firestore.client()
 # for r in result:
 #     print(r.to_dict())
 
-# result = db.collection('restaurantes').get('11')
+# result = db.collection('Usuario').document('24').get()
 # if result.exists:
-    # print(result.to_dict())
+#     print(result.to_dict())
 
 # docs =  db.collection('restaurantes').where('nombre', '==', 'MIRADOR').get()
 # for d in docs:
