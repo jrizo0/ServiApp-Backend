@@ -30,7 +30,8 @@ class RestauranteAPIView(
         try:
             res = requests.get(API_Restaurantes)
         except requests.exceptions.RequestException as e:
-            return {"status": 400, "message": str(e)}
+            # return {"status": 400, "message": str(e)}
+            raise e
         return res.json()
 
     @method_decorator(vary_on_cookie)
