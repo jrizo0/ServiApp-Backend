@@ -43,6 +43,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 
 if not firebase_admin._apps:
     cred = credentials.Certificate(settings.FIREBASE_SETTINGS)
@@ -50,19 +51,40 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
+
+# class SAAuth:
 def fb_valid_req_token(request):
     try:
         auth_token = request.META.get('HTTP_AUTHORIZATION')
         token = auth_token.replace("Bearer ", "")
-        print(token)
+        print("token: " + token)
         decoded_token = auth.verify_id_token(token)
         firebase_user_id = decoded_token['user_id']
-        print(firebase_user_id)
+        print("fb user id: " + firebase_user_id)
         return True
     except:
         return False
     
-        
+def fb_valid_req_token_uid(request, uid):
+    print("uid req: " + uid)
+    try:
+        auth_token = request.META.get('HTTP_AUTHORIZATION')
+        token = auth_token.replace("Bearer ", "")
+        print("token: " + token)
+        decoded_token = auth.verify_id_token(token)
+        firebase_user_id = decoded_token['user_id']
+        print("fb user id: " + firebase_user_id)
+        if uid != firebase_user_id:
+            return False
+        return True
+    except:
+        return False
+
+
+# t = db.document("Restaurante/11").get()
+# t = db.collection("Restaurante").document("11").get()
+# print(t.to_dict())
+
 # data = {'nombre': 'MIRADOR', 'descripcion': 'Descripcion del mirador', 'categoria': '1'}
 # db.collection('restaurantes').document('11').set(data)
 

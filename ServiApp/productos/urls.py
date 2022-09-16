@@ -1,12 +1,17 @@
 from django.urls import path
 
-from . import views
+from .views import ProductosAPIView
 
-app_name = 'productos'
+app_name = "productos"
+
+list = ProductosAPIView.as_view({"get": "list"})
+list_category = ProductosAPIView.as_view({"get": "list_category"})
+list_rest = ProductosAPIView.as_view({"get": "list_rest"})
+list_rest_by_category = ProductosAPIView.as_view({"get": "list_rest_by_category"})
+
 urlpatterns = [
-    path('get/', views.getProductos, name='getProductos'),
-    path('get/<int:id>/', views.getProducto, name='getProducto'),
-    path('create/', views.createProducto, name='createProducto'),
-    path('update/<int:id>/', views.updateProducto, name='updateProducto'),
-    path('delete/<int:id>/', views.deleteProducto, name='deleteProducto'),
+    path("", list),
+    path("category/<str:id_category>/", list_category),
+    path("rest/<str:id_rest>/", list_rest),
+    path("rest/<str:id_rest>/cat/", list_rest_by_category),
 ]
