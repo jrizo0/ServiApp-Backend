@@ -3,6 +3,7 @@ from rest_framework import viewsets
 import requests
 
 from rest_framework.response import Response
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -14,12 +15,20 @@ from django.core.exceptions import PermissionDenied
 
 API_Clientes = settings.SA_API_URL + "/clientes/"
 
+class FBUserRequestAuthenticated(BasePermission):
+    def __init__(self):
+        self.enable_auth = True
+
+    def has_permission(self, request, view):
+        if self.enable_auth and not fb_valid_req_token_uid(request):
+            raise PermissionDenied()
+        return True
+
 
 class UsuarioAPIView(
     viewsets.GenericViewSet,
 ):
-    def __init__(self):
-        self.enable_auth = False
+    permission_classes = [FBUserRequestAuthenticated]
 
     def get_queryset(self):
         uid = self.request.query_params.get("uid")
@@ -32,15 +41,10 @@ class UsuarioAPIView(
     # @method_decorator(vary_on_cookie)
     # @method_decorator(cache_page(60 * 1))
     def retrieve(self, request):
-        uid = self.request.query_params.get("uid")
-        if self.enable_auth and not fb_valid_req_token_uid(self.request, uid):
-            raise PermissionDenied()
         return Response(self.get_queryset())
 
     def add_prod_cart(self, request, id_prod):
         uid = self.request.query_params.get("uid")
-        if self.enable_auth and not fb_valid_req_token_uid(self.request, uid):
-            raise PermissionDenied()
         user = db.collection("Usuario").document(uid).get().to_dict()
         user["Carro"].append(id_prod)
         db.collection("Usuario").document(uid).update(user)
@@ -49,8 +53,6 @@ class UsuarioAPIView(
 
     def del_prod_cart(self, request, id_prod):
         uid = self.request.query_params.get("uid")
-        if self.enable_auth and not fb_valid_req_token_uid(self.request, uid):
-            raise PermissionDenied()
         user = db.collection("Usuario").document(uid).get().to_dict()
         if user["Carro"].count(id_prod) != 0:
             user["Carro"].remove(id_prod)
@@ -60,8 +62,6 @@ class UsuarioAPIView(
 
     def remove_prod_cart(self, request, id_prod):
         uid = self.request.query_params.get("uid")
-        if self.enable_auth and not fb_valid_req_token_uid(self.request, uid):
-            raise PermissionDenied()
         db.collection("Usuario").document(uid).update(
             {"Carro": firestore.ArrayRemove([id_prod])}
         )
@@ -70,31 +70,24 @@ class UsuarioAPIView(
 
     def clear_cart(self, request):
         uid = self.request.query_params.get("uid")
-        if self.enable_auth and not fb_valid_req_token_uid(self.request, uid):
-            raise PermissionDenied()
         user = db.collection("Usuario").document(uid).get().to_dict()
         user["Carro"].clear()
         db.collection("Usuario").document(uid).update(user)
         # return Response(self.get_queryset())
         return Response(self.get_queryset()["Carro"])
 
-    # TODO: Donde guardar factura
+    # TODO: Donde guardar factura.
     def pay_cart(self, request):
         return Response(self.get_queryset())
 
-    # TODO: Donde modificar el nombre
+    # TODO: Donde modificar el nombre.
     def change_name(self, request):
-        uid = self.request.query_params.get("uid")
-        if self.enable_auth and not fb_valid_req_token_uid(self.request, uid):
-            raise PermissionDenied()
         new_name = request.data.get("new_name")
         print(new_name)
         return Response(self.get_queryset())
 
     def change_pass(self, request):
         uid = self.request.query_params.get("uid")
-        if self.enable_auth and not fb_valid_req_token_uid(self.request, uid):
-            raise PermissionDenied()
         new_pass = request.data.get("new_pass")
         user = auth.update_user(uid, password=new_pass)
         return Response({"msg": "Sucessfully updated user: {0}".format(user.uid)})

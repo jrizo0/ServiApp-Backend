@@ -1,7 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, auth
 
-import csv
+import csv, os
 
 if not firebase_admin._apps:
     cred = credentials.Certificate("../ServiApp/serviceAccountKey.json")
@@ -15,7 +15,8 @@ while page:
 
     page = page.get_next_page()
 
-with open ("SA-AuthData.csv", "r", encoding='UTF-8') as f:
+path = os.path.join(os.getcwd(), "data", "SA-AuthData.csv")
+with open (path, "r", encoding='UTF-8') as f:
     print("Filling...")
     reader = csv.reader(f)
     next(reader)

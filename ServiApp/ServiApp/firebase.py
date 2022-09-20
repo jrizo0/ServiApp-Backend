@@ -65,7 +65,8 @@ def fb_valid_req_token(request):
     except:
         return False
     
-def fb_valid_req_token_uid(request, uid):
+def fb_valid_req_token_uid(request):
+    uid = request.query_params.get("uid")
     print("uid req: " + uid)
     try:
         auth_token = request.META.get('HTTP_AUTHORIZATION')

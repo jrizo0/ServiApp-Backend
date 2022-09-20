@@ -3,6 +3,7 @@ from rest_framework import viewsets
 import requests
 
 from rest_framework.response import Response
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -16,12 +17,23 @@ from django.core.exceptions import PermissionDenied
 
 API_Restaurantes = settings.SA_API_URL + "/restaurantes/"
 
+class FBAuthenticated(BasePermission):
+    def __init__(self):
+        self.enable_auth = False
+
+    def has_permission(self, request, view):
+        return not self.enable_auth or fb_valid_req_token(request)
+
+class ReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        return request.method in SAFE_METHODS
+
+
 # NOTE: No se puede @api_view por cache solo se puede con clases).
 class RestauranteAPIView(
     viewsets.GenericViewSet,
 ):
-    def __init__(self):
-        self.enable_auth = False
+    permission_classes = [ReadOnly|FBAuthenticated]
 
     # NOTE: Queryset el nombre de ServiciosAlimentacionApi.
     # def get_queryset(self):
@@ -52,8 +64,6 @@ class RestauranteAPIView(
     # @method_decorator(vary_on_cookie)
     # @method_decorator(cache_page(60 * 1))
     def list_category(self, request, id_category):
-        if self.enable_auth and not fb_valid_req_token(request):
-            raise PermissionDenied()
         fs_query = (
             db.collection("Restaurante").where("Categoria", "==", id_category).get()
         )

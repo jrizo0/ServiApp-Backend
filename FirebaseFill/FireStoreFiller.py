@@ -1,7 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-import sys
+import sys, os
 import csv
 
 if not firebase_admin._apps:
@@ -18,7 +18,9 @@ for doc in docs:
     key = doc.id
     db.collection(collection_name).document(key).delete()
 
-with open (csv_name, "r", encoding='UTF-8') as f:
+path = os.path.join(os.getcwd(), "data", csv_name)
+print(path)
+with open (path, "r", encoding='UTF-8') as f:
     print("Filling...")
     reader = csv.reader(f)
     headers = []
@@ -33,6 +35,7 @@ with open (csv_name, "r", encoding='UTF-8') as f:
         for j in range(1, len(row)):
             if j != 0: new_doc[headers[j-1]] = row[j]
 
+        print(new_doc)
         db.collection(collection_name).document(new_doc_id).set(new_doc)
 
 print("Filled.")

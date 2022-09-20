@@ -20,4 +20,4 @@ serviceAccountKey.json
 
 
 # Data
-*.csv
+FirebaseFill/data
