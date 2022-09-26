@@ -33,8 +33,13 @@ with open (path, "r", encoding='UTF-8') as f:
         new_doc_id = row[0]
         new_doc = {}
         for j in range(1, len(row)):
-            if j != 0: new_doc[headers[j-1]] = row[j]
-
+            cell = row[j]
+            if len(cell) > 0 and cell[0] == "[":
+                cell = cell[1:len(cell)-1]
+                arr_cel = cell.split(",")
+                new_doc[headers[j-1]] = arr_cel
+                continue
+            new_doc[headers[j-1]] = row[j]
         print(new_doc)
         db.collection(collection_name).document(new_doc_id).set(new_doc)
 
