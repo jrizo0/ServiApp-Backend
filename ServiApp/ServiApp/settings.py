@@ -114,8 +114,8 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        # "LOCATION": "redis://serviapp@127.0.0.1:6379/0",
-        "LOCATION": "redis://default@127.0.0.1:6379/0",
+        "LOCATION": "redis://default@serviapp-cache.lagoeg.ng.0001.use1.cache.amazonaws.com:6379/0",
+        # "LOCATION": "redis://default@127.0.0.1:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             # "PASSWORD": "mysecret"

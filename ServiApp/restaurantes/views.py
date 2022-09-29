@@ -71,7 +71,7 @@ class RestauranteAPIView(
         return rests
 
     # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(60 * 1))
+    @method_decorator(cache_page(30 * 1))
     def list(self, request):
         return Response(self.get_queryset())
 
