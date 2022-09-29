@@ -71,13 +71,13 @@ class ProductosAPIView(
         return prods
 
     # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(60 * 1))
+    @method_decorator(cache_page(30 * 1))
     def list(self, request):
         return Response(self.get_queryset())
 
     # @method_decorator(vary_on_headers("Authorization"))
     # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(60 * 1))
+    @method_decorator(cache_page(30 * 1))
     def list_rest(self, request, id_rest):
         if "20-" in id_rest: id_rest = "20"
         tarifas_api = requests.get(API_Tarifas + "tarifav/" + id_rest + "/").json()
