@@ -16,7 +16,7 @@ env.bak/
 venv.bak/ 
 
 # Firebase
-serviceAccountKey.json
+# serviceAccountKey.json
 
 
 # Data
