@@ -13,7 +13,8 @@ from ServiApp.firebase import db, firestore, fb_valid_req_token_uid, auth
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
-API_Clientes = settings.SA_API_URL + "/clientes/"
+API_Clientes = settings.SA_API_URL + "/clientes"
+API_Tarifas = settings.SA_API_URL + "/tarifas"
 
 class FBUserRequestAuthenticated(BasePermission):
     def __init__(self):
@@ -44,12 +45,26 @@ class UsuarioAPIView(
         return Response(self.get_queryset())
 
     def retrieve_cart(self, request):
-        cart = self.get_queryset()["Carro"]
-        cart_prods = []
-        for i in range(len(cart)):
-            prod_q = db.collection("Producto").document(cart[i]).get()
-            cart_prods.append(prod_q.to_dict())
-        return Response(cart_prods)
+
+        # tarifas_api = requests.get(API_Tarifas + "tarifav/" + id_rest + "/").json()
+        # fs_query_prods = db.collection("Producto").get()
+        # rests = []
+        # for prod in fs_query_prods:
+        #     if not prod.id in tarifas_api:
+        #         continue
+        #     rests.append({"id": prod.id} | prod.to_dict() | {"Precio": tarifas_api[prod.id]["precio"]})
+        # fs_query_cats = db.collection("CategoriaProducto").get()
+# get carrito(info producto, restaurante, cantidadprod)
+        usu = self.get_queryset()
+        cart = usu["Carro"]
+        rest_cart = usu["RestauranteCarro"]
+        cart_w_info = []
+        for prod in cart:
+            tarifa_prod = requests.get(f"{API_Tarifas}/{rest_cart}/{prod}/").json()
+            prod_info = db.collection("Producto").document(prod).get()
+            prod_info = {"id": prod_info.id} | prod_info.to_dict()
+            cart_w_info.append(prod_info | {"Cantidad": cart[prod]} | {"Precio": tarifa_prod["precio"]})
+        return Response({"Restaurante": rest_cart, "Productos": cart_w_info})
 
     def add_prod_cart(self, request, id_prod):
         uid = self.request.query_params.get("uid")
