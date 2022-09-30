@@ -17,7 +17,7 @@ API_Clientes = settings.SA_API_URL + "/clientes/"
 
 class FBUserRequestAuthenticated(BasePermission):
     def __init__(self):
-        self.enable_auth = True
+        self.enable_auth = False
 
     def has_permission(self, request, view):
         if self.enable_auth and not fb_valid_req_token_uid(request):
@@ -48,8 +48,13 @@ class UsuarioAPIView(
         user = db.collection("Usuario").document(uid).get().to_dict()
         user["Carro"].append(id_prod)
         db.collection("Usuario").document(uid).update(user)
-        # return Response(self.get_queryset())
-        return Response(self.get_queryset()["Carro"])
+
+        cart = self.get_queryset()["Carro"]
+        cart_prods = []
+        for i in range(len(cart)):
+            prod_q = db.collection("Producto").document(cart[i]).get()
+            cart_prods.append(prod_q.to_dict())
+        return Response(cart_prods)
 
     def del_prod_cart(self, request, id_prod):
         uid = self.request.query_params.get("uid")
