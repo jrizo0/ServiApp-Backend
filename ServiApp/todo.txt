@@ -1,8 +1,8 @@
-get info producto
-get carrito(info producto, restaurnate, cantidadprod)
+- get info producto
+- get carrito(info producto, restaurnate, cantidadprod)
+- post eliminar un producto carrito
+- post clear carrito
 put mod perfil (correo, direccion, telefono, nombre, contraseña)
-post clear carrito
-post eliminar un producto carrito
   fs tabla tarjeta(id, nombre, numerotarjeta, imagen, csv)
   fs usuario tiene tarjetas
 get tarjetas

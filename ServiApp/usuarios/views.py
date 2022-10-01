@@ -1,3 +1,5 @@
+from requests.adapters import ResponseError
+from requests.sessions import Request
 from rest_framework import viewsets
 
 import requests
@@ -16,6 +18,7 @@ from django.core.exceptions import PermissionDenied
 API_Clientes = settings.SA_API_URL + "/clientes"
 API_Tarifas = settings.SA_API_URL + "/tarifas"
 
+
 class FBUserRequestAuthenticated(BasePermission):
     def __init__(self):
         self.enable_auth = False
@@ -26,9 +29,7 @@ class FBUserRequestAuthenticated(BasePermission):
         return True
 
 
-class UsuarioAPIView(
-    viewsets.GenericViewSet,
-):
+class UsuarioAPIView(viewsets.GenericViewSet):
     permission_classes = [FBUserRequestAuthenticated]
 
     def get_queryset(self):
@@ -45,58 +46,78 @@ class UsuarioAPIView(
         return Response(self.get_queryset())
 
     def retrieve_cart(self, request):
-
-        # tarifas_api = requests.get(API_Tarifas + "tarifav/" + id_rest + "/").json()
-        # fs_query_prods = db.collection("Producto").get()
-        # rests = []
-        # for prod in fs_query_prods:
-        #     if not prod.id in tarifas_api:
-        #         continue
-        #     rests.append({"id": prod.id} | prod.to_dict() | {"Precio": tarifas_api[prod.id]["precio"]})
-        # fs_query_cats = db.collection("CategoriaProducto").get()
-# get carrito(info producto, restaurante, cantidadprod)
-        usu = self.get_queryset()
-        cart = usu["Carro"]
-        rest_cart = usu["RestauranteCarro"]
+        uid = self.request.query_params.get("uid")
+        prods_in_cart = db.collection("Carro").where("Usuario", "==", uid).get()
+        if len(prods_in_cart) == 0:
+            return Response({"Restaurante": "", "Productos": []})
         cart_w_info = []
-        for prod in cart:
-            tarifa_prod = requests.get(f"{API_Tarifas}/{rest_cart}/{prod}/").json()
-            prod_info = db.collection("Producto").document(prod).get()
+        for prod in prods_in_cart:
+            prod = prod.to_dict()
+            prod_info = db.collection("Producto").document(prod["Producto"]).get()
             prod_info = {"id": prod_info.id} | prod_info.to_dict()
-            cart_w_info.append(prod_info | {"Cantidad": cart[prod]} | {"Precio": tarifa_prod["precio"]})
-        return Response({"Restaurante": rest_cart, "Productos": cart_w_info})
+            cart_w_info.append(prod_info | prod)
+        usu = self.get_queryset()
+        rest_cart = usu["RestauranteCarro"]
+        rest_cart_info = db.collection("Restaurante").document(rest_cart).get()
+        return Response({"Restaurante": rest_cart_info.to_dict(), "Productos": cart_w_info})
 
-    def add_prod_cart(self, request, id_prod):
+    def add_prod_cart(self, request, id_prod, cant, id_rest):
         uid = self.request.query_params.get("uid")
         user = db.collection("Usuario").document(uid).get().to_dict()
-        user["Carro"].append(id_prod)
-        db.collection("Usuario").document(uid).update(user)
-        return Response(self.get_queryset())
+        if user["RestauranteCarro"] != "" and id_rest != user["RestauranteCarro"]:
+            return ResponseError()
+        if user["RestauranteCarro"] == "":
+            db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
 
-    def del_prod_cart(self, request, id_prod):
-        uid = self.request.query_params.get("uid")
-        user = db.collection("Usuario").document(uid).get().to_dict()
-        if user["Carro"].count(id_prod) != 0:
-            user["Carro"].remove(id_prod)
-            db.collection("Usuario").document(uid).update(user)
-        # return Response(self.get_queryset())
-        return Response(self.get_queryset()["Carro"])
+        same_prods_in_cart = (
+            db.collection("Carro")
+            .where("Usuario", "==", uid)
+            .where("Producto", "==", id_prod)
+            .get()
+        )
+        for prod in same_prods_in_cart:
+            db.collection("Carro").document(prod.id).delete()
+
+        tarifa = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/").json()
+        data = {
+            "Cantidad": cant,
+            "Precio": tarifa["precio"],
+            "Producto": id_prod,
+            "Usuario": uid,
+        }
+        db.collection("Carro").add(data)
+        return Response()
 
     def remove_prod_cart(self, request, id_prod):
         uid = self.request.query_params.get("uid")
-        db.collection("Usuario").document(uid).update(
-            {"Carro": firestore.ArrayRemove([id_prod])}
+        prod_in_cart = (
+            db.collection("Carro")
+            .where("Usuario", "==", uid)
+            .where("Producto", "==", id_prod)
+            .get()
         )
-        # return Response(self.get_queryset())
-        return Response(self.get_queryset()["Carro"])
+        for prod in prod_in_cart:
+            db.collection("Carro").document(prod.id).delete()
+
+        user_cart = db.collection("Carro").where("Usuario", "==", uid).get()
+        if len(user_cart) == 0:
+            db.collection("Usuario").document(uid).update({"RestauranteCarro": ""})
+
+        return Response()
 
     def clear_cart(self, request):
         uid = self.request.query_params.get("uid")
-        user = db.collection("Usuario").document(uid).get().to_dict()
-        user["Carro"].clear()
-        db.collection("Usuario").document(uid).update(user)
-        # return Response(self.get_queryset())
-        return Response(self.get_queryset()["Carro"])
+        prod_in_cart = db.collection("Carro").where("Usuario", "==", uid).get()
+        for prod in prod_in_cart:
+            db.collection("Carro").document(prod.id).delete()
+        db.collection("Usuario").document(uid).update({"RestauranteCarro": ""})
+        return Response()
+
+    # TODO: deja guardar tarjetas repetidas.
+    def add_card(self, request):
+        uid = self.request.query_params.get("uid")
+        db.collection("Tarjeta").add({"Usuario": uid} | request.data)
+        return Response()
 
     # TODO: Donde guardar factura.
     def pay_cart(self, request):

@@ -15,7 +15,8 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
 
-API_Restaurantes = settings.SA_API_URL + "/restaurantes/"
+API_Restaurantes = settings.SA_API_URL + "/restaurantes"
+
 
 class FBAuthenticated(BasePermission):
     def __init__(self):
@@ -24,16 +25,14 @@ class FBAuthenticated(BasePermission):
     def has_permission(self, request, view):
         return not self.enable_auth or fb_valid_req_token(request)
 
+
 class ReadOnly(BasePermission):
     def has_permission(self, request, view):
         return request.method in SAFE_METHODS
 
 
-# NOTE: No se puede @api_view por cache solo se puede con clases).
-class RestauranteAPIView(
-    viewsets.GenericViewSet,
-):
-    permission_classes = [ReadOnly|FBAuthenticated]
+class RestauranteAPIView(viewsets.GenericViewSet):
+    permission_classes = [ReadOnly | FBAuthenticated]
 
     def aux_fill_missing_fields(self, rests, fs_query_cats):
         for i in range(len(rests)):
@@ -45,24 +44,11 @@ class RestauranteAPIView(
                 if rests[i]["Imagen"] == "":
                     rests[i] = rests[i] | {"Imagen": doc_cat.to_dict()["Imagen"]}
                 if rests[i]["Descripcion"] == "":
-                    rests[i] = rests[i] | {"Descripcion": doc_cat.to_dict()["Descripcion"]}
+                    rests[i] = rests[i] | {
+                        "Descripcion": doc_cat.to_dict()["Descripcion"]
+                    }
         return rests
 
-    # NOTE: Queryset el nombre de ServiciosAlimentacionApi.
-    # def get_queryset(self):
-    #     try:
-    #         fs_query = db.collection("Restaurante").get()
-    #         res = []
-    #         for rest in fs_query:
-    #             rest_api = requests.get(API_Restaurantes + rest.id).json()
-    #             rest = {"id": rest.id} | rest.to_dict()
-    #             rest['Nombre'] = rest_api['descripcion']
-    #             res.append(rest)
-    #     except requests.exceptions.RequestException as e:
-    #         raise e
-    #     return res
-
-    # NOTE: Queryset guardando el nombre en fb.
     def get_queryset(self):
         fs_query_rests = db.collection("Restaurante").get()
         fs_query_cats = db.collection("CategoriaRestaurante").get()
@@ -81,7 +67,9 @@ class RestauranteAPIView(
     # @method_decorator(cache_page(60 * 1))
     def list_category(self, request, id_category):
         fs_query = (
-            db.collection("Restaurante").where("Categoria", "array_contains", id_category).get()
+            db.collection("Restaurante")
+            .where("Categoria", "array_contains", id_category)
+            .get()
         )
         rests_in_category = [{"id": doc.id} | doc.to_dict() for doc in fs_query]
         return Response(rests_in_category)
