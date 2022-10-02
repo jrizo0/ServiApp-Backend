@@ -2,9 +2,9 @@
 - get carrito(info producto, restaurnate, cantidadprod)
 - post eliminar un producto carrito
 - post clear carrito
-put mod perfil (correo, direccion, telefono, nombre, contraseña)
-  fs tabla tarjeta(id, nombre, numerotarjeta, imagen, csv)
-  fs usuario tiene tarjetas
-get tarjetas
-post agregar tarjeta
-delete delete tarjeta
+- put mod perfil (correo, direccion, telefono, nombre, contraseña)
+-  fs tabla tarjeta(id, nombre, numerotarjeta, imagen, csv)
+-  fs usuario tiene tarjetas
+- get tarjetas
+- post agregar tarjeta
+- delete delete tarjeta

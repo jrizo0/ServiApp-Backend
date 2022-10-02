@@ -87,7 +87,7 @@ def fb_valid_req_token_uid(request):
 # print(t.to_dict())
 
 # data = {'nombre': 'MIRADOR', 'descripcion': 'Descripcion del mirador', 'categoria': '1'}
-# db.collection('restaurantes').document('11').set(data)
+# db.collection('restaurantes').document('11').set(data) #.delete()
 
 # result = db.collection('restaurantes').get() 
 # for r in result:
