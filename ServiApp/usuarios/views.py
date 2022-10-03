@@ -53,6 +53,8 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         uid = self.request.query_params.get("uid")
         user_fs = db.collection("Usuario").document(uid).get()
         user_fs = user_fs.to_dict()
+        if not user_fs["Carro"]:
+            return Response({})
         cart_w_info = []
         for id_prod, item_cart in user_fs["Carro"].items():
             prod_info = db.collection("Producto").document(id_prod).get().to_dict()
