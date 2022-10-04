@@ -82,7 +82,6 @@ class ProductosAPIView(viewsets.GenericViewSet):
         if "20-" in id_rest:
             id_rest = "20"
         tarifas_api = requests.get(API_Tarifas + "/tarifav/" + id_rest + "/").json()
-        print(tarifas_api)
         fs_query_prods = db.collection("Producto").get()
         rests = []
         for prod in fs_query_prods:
