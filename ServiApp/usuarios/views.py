@@ -56,9 +56,10 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if not user_fs["Carro"]:
             return Response({})
         cart_w_info = []
-        for id_prod, item_cart in user_fs["Carro"].items():
+        for id_prod, item_cart_info in user_fs["Carro"].items():
             prod_info = db.collection("Producto").document(id_prod).get().to_dict()
-            cart_w_info.append(item_cart | prod_info)
+            cart_w_info.append({"id": id_prod} | item_cart_info | prod_info)
+
         rest_info = (
             db.collection("Restaurante").document(user_fs["RestauranteCarro"]).get()
         )
@@ -203,13 +204,15 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         )
 
         info_fs = {"Telefono": usu_form["Telefono"]}
-        db.collection("Usuario").document(uid).set(info_fs)
+        db.collection("Usuario").document(uid).update(
+            {"Telefono": usu_form["Telefono"]}
+        )
 
         return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
     def change_pass(self, request):
         uid = self.request.query_params.get("uid")
-        new_pass = request.data.get("new_pass")
+        new_pass = str(request.data["new_pass"])
         user = auth.update_user(uid, password=new_pass)
         return Response(
             {"status": 200, "msg": f"Sucessfully updated pass to user: {user.uid}"}
