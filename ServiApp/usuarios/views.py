@@ -76,7 +76,9 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if cant == 0:
             return Response({"msg": "Cantidad es 0"})
         user = db.collection("Usuario").document(uid).get().to_dict()
-        price = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/").json()["precio"]
+        id_rest_query_api = id_rest
+        if "20-" in id_rest_query_api: id_rest_query_api = "20"
+        price = requests.get(f"{API_Tarifas}/{id_rest_query_api}/{id_prod}/").json()["precio"]
         if user["RestauranteCarro"] != "" and id_rest != user["RestauranteCarro"]:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
