@@ -78,7 +78,10 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         user = db.collection("Usuario").document(uid).get().to_dict()
         price = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/").json()["precio"]
         if user["RestauranteCarro"] != "" and id_rest != user["RestauranteCarro"]:
-            return Response()
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "Restaurante no coincide con el restaurante del carrito"},
+            )
         if user["RestauranteCarro"] == "":
             db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
         cart = user["Carro"]
