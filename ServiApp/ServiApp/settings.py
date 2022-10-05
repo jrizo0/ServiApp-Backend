@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'usuarios.apps.UsuariosConfig',
     'restaurantes.apps.RestaurantesConfig',
     'productos.apps.ProductosConfig',
+    'recomendaciones.apps.RecomendacionesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
