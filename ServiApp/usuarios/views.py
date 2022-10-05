@@ -76,12 +76,12 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if cant == 0:
             return Response({"msg": "Cantidad es 0"})
         user = db.collection("Usuario").document(uid).get().to_dict()
+        price = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/").json()["precio"]
         if user["RestauranteCarro"] != "" and id_rest != user["RestauranteCarro"]:
             return Response()
         if user["RestauranteCarro"] == "":
             db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
         cart = user["Carro"]
-        price = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/").json()["precio"]
         cart[id_prod] = {}
         cart[id_prod]["Precio"] = price * cant
         cart[id_prod]["Cantidad"] = cant

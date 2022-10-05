@@ -58,30 +58,25 @@ class ProductosAPIView(viewsets.GenericViewSet):
         return prods
 
     # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(30 * 1))
+    @method_decorator(cache_page(30 * 1))
     def list(self, request):
         return Response(self.get_queryset())
 
     # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(30 * 1))
+    @method_decorator(cache_page(30 * 1))
     def retrieve(self, request, id_prod, id_rest):
         prod = db.collection("Producto").document(id_prod).get()
-        # TODO: sin precio.
-        # if not prod.exists:
-        #     return {}
-        # return Response(prod.to_dict())
-        # TODO: con precio.
         tarifa = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/").json()
         data = {"id": prod.id} | prod.to_dict() | {"Precio": tarifa["precio"]}
         return Response(data)
 
     # @method_decorator(vary_on_headers("Authorization"))
     # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(30 * 1))
+    @method_decorator(cache_page(30 * 1))
     def list_rest(self, request, id_rest):
         if "20-" in id_rest:
             id_rest = "20"
-        tarifas_api = requests.get(API_Tarifas + "/tarifav/" + id_rest + "/").json()
+        tarifas_api = requests.get(f"{API_Tarifas}/tarifav/{id_rest}/").json()
         fs_query_prods = db.collection("Producto").get()
         rests = []
         for prod in fs_query_prods:
