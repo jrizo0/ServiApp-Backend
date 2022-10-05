@@ -16,6 +16,7 @@ from django.core.exceptions import PermissionDenied
 
 
 API_Restaurantes = settings.SA_API_URL + "/restaurantes"
+API_Aforo = settings.AFORO_API_URL + "/aforo"
 
 
 class FBAuthenticated(BasePermission):
@@ -61,15 +62,6 @@ class RestauranteAPIView(viewsets.GenericViewSet):
     def list(self, request):
         return Response(self.get_queryset())
 
-    # TODO: Eliminar vista?.
-    # @method_decorator(vary_on_headers("Authorization"))
-    # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(60 * 1))
-    def list_category(self, request, id_category):
-        fs_query = (
-            db.collection("Restaurante")
-            .where("Categoria", "array_contains", id_category)
-            .get()
-        )
-        rests_in_category = [{"id": doc.id} | doc.to_dict() for doc in fs_query]
-        return Response(rests_in_category)
+    def aforo(self, request, id_rest):
+        aforo = requests.get(f"{API_Aforo}/get/{id_rest}/").json()
+        return Response(aforo)
