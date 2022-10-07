@@ -116,7 +116,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
     def list_cards(self, request):
         uid = self.request.query_params.get("uid")
         cards = db.collection("Tarjeta").where("Usuario", "==", uid).get()
-        return Response([card.to_dict() for card in cards])
+        return Response([{ "id": card.id } | card.to_dict() for card in cards])
 
     def add_card(self, request):
         uid = self.request.query_params.get("uid")
