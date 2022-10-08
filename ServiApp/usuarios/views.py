@@ -136,13 +136,14 @@ class UsuarioAPIView(viewsets.GenericViewSet):
                 data={"msg": "Tarjeta repetida"},
             )
         image = ""
-        if request.data["Nombre"] == "Master Card":
+        print(request.data["Tipo"])
+        if request.data["Tipo"] == "Master Card":
             image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/masterCard.png"
-        elif request.data["Nombre"] == "American":
+        elif request.data["Tipo"] == "American":
             image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/american.jpg"
-        elif request.data["Nombre"] == "Discover":
+        elif request.data["Tipo"] == "Discover":
             image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/discover.png"
-        elif request.data["Nombre"] == "Visa":
+        elif request.data["Tipo"] == "Visa":
             image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/visa.png"
         db.collection("Tarjeta").add(
             {"Usuario": uid} | request.data | {"Imagen": image}
