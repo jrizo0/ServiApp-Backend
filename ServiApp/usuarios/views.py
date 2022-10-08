@@ -135,6 +135,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={"msg": "Tarjeta repetida"},
             )
+        image = ""
         if request.data["Nombre"] == "Master Card":
             image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/masterCard.png"
         elif request.data["Nombre"] == "American":
