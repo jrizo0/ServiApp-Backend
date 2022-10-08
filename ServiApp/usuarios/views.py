@@ -77,8 +77,11 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             return Response({"msg": "Cantidad es 0"})
         user = db.collection("Usuario").document(uid).get().to_dict()
         id_rest_query_api = id_rest
-        if "20-" in id_rest_query_api: id_rest_query_api = "20"
-        price = requests.get(f"{API_Tarifas}/{id_rest_query_api}/{id_prod}/").json()["precio"]
+        if "20-" in id_rest_query_api:
+            id_rest_query_api = "20"
+        price = requests.get(f"{API_Tarifas}/{id_rest_query_api}/{id_prod}/").json()[
+            "precio"
+        ]
         if user["RestauranteCarro"] != "" and id_rest != user["RestauranteCarro"]:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
@@ -116,7 +119,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
     def list_cards(self, request):
         uid = self.request.query_params.get("uid")
         cards = db.collection("Tarjeta").where("Usuario", "==", uid).get()
-        return Response([{ "id": card.id } | card.to_dict() for card in cards])
+        return Response([{"id": card.id} | card.to_dict() for card in cards])
 
     def add_card(self, request):
         uid = self.request.query_params.get("uid")
@@ -132,7 +135,17 @@ class UsuarioAPIView(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={"msg": "Tarjeta repetida"},
             )
-        db.collection("Tarjeta").add({"Usuario": uid} | request.data)
+        if request.data["Nombre"] == "Master Card":
+            image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/masterCard.png"
+        elif request.data["Nombre"] == "American":
+            image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/american.jpg"
+        elif request.data["Nombre"] == "Discover":
+            image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/discover.png"
+        elif request.data["Nombre"] == "Visa":
+            image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/visa.png"
+        db.collection("Tarjeta").add(
+            {"Usuario": uid} | request.data | {"Imagen": image}
+        )
         return Response({"msg": "Tarjeta añadida"})
 
     def delete_card(self, request):

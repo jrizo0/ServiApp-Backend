@@ -8,6 +8,6 @@
 - get tarjetas
 - post agregar tarjeta
 - delete delete tarjeta
-fecha tarjeta
+- fecha tarjeta
 mas rapido funciones
-guardar la url de tarjeta dependiendo del nombre
+- guardar la url de tarjeta dependiendo del nombre
