@@ -169,7 +169,6 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         return Response({"msg": "Tarjeta eliminada"})
 
     def create(self, request):
-        uid = self.request.query_params.get("uid")
         # {(api) nombrecliente, direccion1, e_mail, (auth) password, (fs) DeviceToken, Telefono}
         usu_form = request.data
         info_api = {
@@ -194,8 +193,9 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Rol": "Usuario",  # Por defecto rol usuario
             "RestauranteCarro": "",  # Por defecto vacio
             "Telefono": usu_form["Telefono"],
+            "Carro": {}
         }
-        db.collection("Usuario").document(uid).set(info_fs)
+        db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
 
         return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
