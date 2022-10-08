@@ -179,7 +179,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "tipo": 3,  # Por defecto usuario tipo estudiante
         }
         info_api = requests.post(f"{API_Clientes}/", json=info_api)
-        if info_api.status_code in [201, 200]:
+        if not info_api.status_code in [201, 200]:
             raise ValidationError()
         info_api = info_api.json()
 
