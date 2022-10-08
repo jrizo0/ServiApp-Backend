@@ -136,10 +136,9 @@ class UsuarioAPIView(viewsets.GenericViewSet):
                 data={"msg": "Tarjeta repetida"},
             )
         image = ""
-        print(request.data["Tipo"])
         if request.data["Tipo"] == "Master Card":
             image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/masterCard.png"
-        elif request.data["Tipo"] == "American":
+        elif request.data["Tipo"] == "American Express":
             image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/american.jpg"
         elif request.data["Tipo"] == "Discover":
             image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/discover.png"
