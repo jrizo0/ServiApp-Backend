@@ -10,7 +10,7 @@ usu_retrieve_cart = UsuarioAPIView.as_view({"get": "retrieve_cart"})
 usu_add_prod_cart = UsuarioAPIView.as_view({"post": "add_prod_cart"})
 usu_remove_prod_cart = UsuarioAPIView.as_view({"post": "remove_prod_cart"})
 usu_clear_cart = UsuarioAPIView.as_view({"post": "clear_cart"})
-# usu_pay_cart = UsuarioAPIView.as_view({"post": "pay_cart"})
+usu_pay_cart = UsuarioAPIView.as_view({"post": "pay_cart"})
 
 usu_list_cards = UsuarioAPIView.as_view({"get": "list_cards"})
 usu_add_card = UsuarioAPIView.as_view({"post": "add_card"})
@@ -28,7 +28,7 @@ urlpatterns = [
     path("addcart/<str:id_prod>/<int:cant>/<str:id_rest>/", usu_add_prod_cart),
     path("removecart/<str:id_prod>/", usu_remove_prod_cart),
     path("clearcart/", usu_clear_cart),
-    # path("pay/", usu_pay_cart),
+    path("pay/", usu_pay_cart),
 
     path("cards/", usu_list_cards),
     path("addcard/", usu_add_card),

@@ -2,6 +2,7 @@ from rest_framework import viewsets
 
 import requests
 import json
+from datetime import datetime
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -77,8 +78,11 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             return Response({"msg": "Cantidad es 0"})
         user = db.collection("Usuario").document(uid).get().to_dict()
         id_rest_query_api = id_rest
-        if "20-" in id_rest_query_api: id_rest_query_api = "20"
-        price = requests.get(f"{API_Tarifas}/{id_rest_query_api}/{id_prod}/").json()["precio"]
+        if "20-" in id_rest_query_api:
+            id_rest_query_api = "20"
+        price = requests.get(f"{API_Tarifas}/{id_rest_query_api}/{id_prod}/").json()[
+            "precio"
+        ]
         if user["RestauranteCarro"] != "" and id_rest != user["RestauranteCarro"]:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
@@ -87,9 +91,11 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if user["RestauranteCarro"] == "":
             db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
         cart = user["Carro"]
-        cart[id_prod] = {}
+        cart[id_prod] = {} # elimina lo anterior
         cart[id_prod]["Precio"] = price * cant
         cart[id_prod]["Cantidad"] = cant
+        # TODO: Definir.
+        # cart[id_prod]["Cantidad"] = cart[id_prod]["Cantidad"] + cant if cart[id_prod]["Cantidad"] else cant # suma cantidad a la anterior
         db.collection("Usuario").document(uid).update({"Carro": cart})
         return Response({"msg": "Producto añadido al carrito"})
 
@@ -105,12 +111,32 @@ class UsuarioAPIView(viewsets.GenericViewSet):
 
     def clear_cart(self, request):
         uid = self.request.query_params.get("uid")
-        db.collection("Usuario").document(uid).update({"RestauranteCarro": ""})
-        db.collection("Usuario").document(uid).update({"Carro": {}})
+        db.collection("Usuario").document(uid).update(
+            {"RestauranteCarro": "", "Carro": {}}
+        )
         return Response({"msg": "Carrito vaciado"})
 
-    # TODO: Donde guardar factura.
     def pay_cart(self, request):
+        # request.data = Carro:map, Domicilio:boolean, Estado, Fecha, Restaurante, Tarjeta
+        uid = self.request.query_params.get("uid")
+        user_fs = db.collection("Usuario").document(uid).get()
+        user_fs = user_fs.to_dict()
+        dt = datetime.now()
+        new_order = {
+            "Usuario": uid,
+            "Carro": user_fs["Carro"],
+            "Domicilio": request.data["Domicilio"],
+            "Estado": request.data["Estado"],
+            "Fecha": dt,
+            "Restaurante": request.data["Restaurante"],
+            "Tarjeta": request.data["Tarjeta"],
+        }
+        db.collection("Ordenes").add(new_order)
+        # clear cart
+        db.collection("Usuario").document(uid).update(
+            {"RestauranteCarro": "", "Carro": {}}
+        )
+        # TODO: guardar factura en serviciosalimentacion-api.
         return Response(self.get_queryset())
 
     def list_cards(self, request):

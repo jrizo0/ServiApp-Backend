@@ -8,3 +8,7 @@
 - get tarjetas
 - post agregar tarjeta
 - delete delete tarjeta
+paycart: guardar factura en bd de serviciosali, tablas (ventas, ventasdomi) en bd
+modificar prod en carrito definir:
+    sumar cantidad(bueno para sumar desde pantalla prod)?
+    sobreescribir cantidad(bueno para modificar desde pantalla carrito)?

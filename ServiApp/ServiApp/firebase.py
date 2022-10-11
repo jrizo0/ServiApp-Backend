@@ -81,6 +81,42 @@ def fb_valid_req_token_uid(request):
     except:
         return False
 
+# cart[id_prod]["Cantidad"] = cart[id_prod]["Cantidad"] + cant if cart[id_prod]["Cantidad"] else cant
+
+# id_user = "test"
+# id_user = 24
+# t = db.collection(f"Usuario/{id_user}/Ordenes").document("lKIqZalicpIYGTh9Y1Qj").get()
+# print(t.to_dict())
+# t = db.collection(f"Usuario/{id_user}/Ordenes").get()
+# for e in t:
+#     db.collection(f"Usuario/test2/Ordenes").add(e.to_dict())
+# print([e.to_dict() for e in t]) # imprimir ordernes por usuario
+
+# import time
+# #sub coleccion 3.7210
+# # start_time = time.time()
+# #Todas ordenes
+# t = db.collection(f"Usuario").get()
+# orders = []
+# for u in t:
+#     u_orders = db.collection(f"Usuario/{u.id}/Ordenes").get()
+#     if u_orders:
+#         orders.extend([{"id": o.id} | {"uid": u.id} | o.to_dict() for o in u_orders])
+# # print(orders)
+# #Ordenes por usuario
+# t = db.collection(f"Usuario/test/Ordenes").get()
+# orders = [o.to_dict for o in t]
+# print("1: ", time.time() - start_time, "to run")
+
+# #coleccion aparte  0.472
+# start_time = time.time()
+# #Todas ordenes
+# orders = db.collection(f"Ordenes").get()
+# # print([order.to_dict() for order in t])
+# #Una orden
+# t = db.collection(f"Ordenes").where("uid", "==", "test").get()
+# orders = [o.to_dict() for o in t]
+# print("2: ", time.time() - start_time, "to run")
 
 # t = db.document("Restaurante/11").get()
 # t = db.collection("Restaurante").document("11").get()
