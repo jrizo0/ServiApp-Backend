@@ -142,7 +142,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
     def list_cards(self, request):
         uid = self.request.query_params.get("uid")
         cards = db.collection("Tarjeta").where("Usuario", "==", uid).get()
-        return Response([card.to_dict() for card in cards])
+        return Response([{"id": card.id} | card.to_dict() for card in cards])
 
     def add_card(self, request):
         uid = self.request.query_params.get("uid")
@@ -158,7 +158,18 @@ class UsuarioAPIView(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={"msg": "Tarjeta repetida"},
             )
-        db.collection("Tarjeta").add({"Usuario": uid} | request.data)
+        image = ""
+        if request.data["Tipo"] == "Master Card":
+            image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/masterCard.png"
+        elif request.data["Tipo"] == "American Express":
+            image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/american.jpg"
+        elif request.data["Tipo"] == "Discover":
+            image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/discover.png"
+        elif request.data["Tipo"] == "Visa":
+            image = "https://storage.googleapis.com/serviapp-e9a34.appspot.com/Tarjeta/visa.png"
+        db.collection("Tarjeta").add(
+            {"Usuario": uid} | request.data | {"Imagen": image}
+        )
         return Response({"msg": "Tarjeta añadida"})
 
     def delete_card(self, request):
@@ -181,7 +192,6 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         return Response({"msg": "Tarjeta eliminada"})
 
     def create(self, request):
-        uid = self.request.query_params.get("uid")
         # {(api) nombrecliente, direccion1, e_mail, (auth) password, (fs) DeviceToken, Telefono}
         usu_form = request.data
         info_api = {
@@ -191,7 +201,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "tipo": 3,  # Por defecto usuario tipo estudiante
         }
         info_api = requests.post(f"{API_Clientes}/", json=info_api)
-        if info_api.status_code in [201, 200]:
+        if not info_api.status_code in [201, 200]:
             raise ValidationError()
         info_api = info_api.json()
 
@@ -206,8 +216,9 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Rol": "Usuario",  # Por defecto rol usuario
             "RestauranteCarro": "",  # Por defecto vacio
             "Telefono": usu_form["Telefono"],
+            "Carro": {}
         }
-        db.collection("Usuario").document(uid).set(info_fs)
+        db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
 
         return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
