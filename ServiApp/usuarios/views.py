@@ -13,7 +13,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 
-from ServiApp.firebase import db, firestore, fb_valid_req_token_uid, auth
+from ServiApp.firebase import db, fb_valid_req_token_uid, auth
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
@@ -91,11 +91,12 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if user["RestauranteCarro"] == "":
             db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
         cart = user["Carro"]
-        cart[id_prod] = {} # elimina lo anterior
+        cart[id_prod] = {}  # elimina lo anterior
         cart[id_prod]["Precio"] = price * cant
         cart[id_prod]["Cantidad"] = cant
         # TODO: Definir.
-        # cart[id_prod]["Cantidad"] = cart[id_prod]["Cantidad"] + cant if cart[id_prod]["Cantidad"] else cant # suma cantidad a la anterior
+        # suma cantidad a la anterior
+        # cart[id_prod]["Cantidad"] = cart[id_prod]["Cantidad"] + cant if cart[id_prod]["Cantidad"] else cant
         db.collection("Usuario").document(uid).update({"Carro": cart})
         return Response({"msg": "Producto añadido al carrito"})
 
@@ -126,18 +127,19 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Usuario": uid,
             "Carro": user_fs["Carro"],
             "Domicilio": request.data["Domicilio"],
-            "Estado": request.data["Estado"],
+            # 0 por defecto, el pedido no se ha confirmado?
+            "Estado": 0,  # request.data["Estado"],
             "Fecha": dt,
             "Restaurante": request.data["Restaurante"],
             "Tarjeta": request.data["Tarjeta"],
         }
-        db.collection("Ordenes").add(new_order)
-        # clear cart
+        fs_doc = db.collection("Ordenes").add(new_order)
+        new_order["id"] = fs_doc[1].id  # fs_doc: tuple (time, doc)
         db.collection("Usuario").document(uid).update(
             {"RestauranteCarro": "", "Carro": {}}
         )
         # TODO: guardar factura en serviciosalimentacion-api.
-        return Response(self.get_queryset())
+        return Response(new_order)
 
     def list_cards(self, request):
         uid = self.request.query_params.get("uid")
@@ -216,7 +218,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Rol": "Usuario",  # Por defecto rol usuario
             "RestauranteCarro": "",  # Por defecto vacio
             "Telefono": usu_form["Telefono"],
-            "Carro": {}
+            "Carro": {},
         }
         db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
 

@@ -81,6 +81,10 @@ def fb_valid_req_token_uid(request):
     except:
         return False
 
+# t = db.collection("Ordenes").add({"test": "test"})
+# print("1", t[0])
+# print("2", t[1].id)
+
 # cart[id_prod]["Cantidad"] = cart[id_prod]["Cantidad"] + cant if cart[id_prod]["Cantidad"] else cant
 
 # id_user = "test"
