@@ -267,7 +267,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             raise ValidationError()
         uid = self.request.query_params.get("uid")
         new_token = {"DeviceToken": request.data["DeviceToken"]}
-        db.collection("Usuario").document(uid).set(new_token)
+        db.collection("Usuario").document(uid).update(new_token)
         return Response(
             {"status": 200, "msg": f"Sucessfully updated push token to user: {uid}"}
         )
