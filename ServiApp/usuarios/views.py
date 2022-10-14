@@ -92,10 +92,9 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
         cart = user["Carro"]
         cart[id_prod] = {}  # elimina lo anterior
-        cart[id_prod]["Precio"] = price * cant
+        cart[id_prod]["Precio"] = price
         cart[id_prod]["Cantidad"] = cant
-        # TODO: Definir.
-        # suma cantidad a la anterior
+        # TODO: Definir. suma cantidad a la anterior o sobreescribe la cantidad
         # cart[id_prod]["Cantidad"] = cart[id_prod]["Cantidad"] + cant if cart[id_prod]["Cantidad"] else cant
         db.collection("Usuario").document(uid).update({"Carro": cart})
         return Response({"msg": "Producto añadido al carrito"})
