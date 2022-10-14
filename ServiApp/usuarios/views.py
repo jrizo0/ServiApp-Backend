@@ -133,7 +133,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Tarjeta": request.data["Tarjeta"],
         }
         fs_doc = db.collection("Ordenes").add(new_order)
-        new_order["id"] = fs_doc[1].id  # fs_doc: tuple (time, doc)
+        new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
         db.collection("Usuario").document(uid).update(
             {"RestauranteCarro": "", "Carro": {}}
         )
