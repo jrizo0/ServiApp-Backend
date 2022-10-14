@@ -129,7 +129,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             # 0 por defecto, el pedido no se ha confirmado?
             "Estado": 0,  # request.data["Estado"],
             "Fecha": dt,
-            "Restaurante": request.data["Restaurante"],
+            "Restaurante": user_fs["RestauranteCarro"],
             "Tarjeta": request.data["Tarjeta"],
         }
         fs_doc = db.collection("Ordenes").add(new_order)
