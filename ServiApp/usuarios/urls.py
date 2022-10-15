@@ -25,7 +25,7 @@ urlpatterns = [
     path("", usu_get),
 
     path("cart/", usu_retrieve_cart),
-    path("addcart/<str:id_prod>/<int:cant>/<str:id_rest>/", usu_add_prod_cart),
+    path("addcart/<str:id_prod>/<int:cant>/<str:id_rest>/<str:delivery>/", usu_add_prod_cart),
     path("removecart/<str:id_prod>/", usu_remove_prod_cart),
     path("clearcart/", usu_clear_cart),
     path("pay/", usu_pay_cart),

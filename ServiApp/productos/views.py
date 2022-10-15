@@ -58,12 +58,12 @@ class ProductosAPIView(viewsets.GenericViewSet):
         return prods
 
     # @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(30 * 1))
+    # @method_decorator(cache_page(30 * 1))
     def list(self, request):
         return Response(self.get_queryset())
 
     # @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(30 * 1))
+    @method_decorator(cache_page(60 * 60))
     def retrieve(self, request, id_prod, id_rest):
         prod = db.collection("Producto").document(id_prod).get()
         tarifa = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/").json()
@@ -72,7 +72,7 @@ class ProductosAPIView(viewsets.GenericViewSet):
 
     # @method_decorator(vary_on_headers("Authorization"))
     # @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(30 * 1))
+    @method_decorator(cache_page(60 * 60))
     def list_rest(self, request, id_rest):
         if "20-" in id_rest:
             id_rest = "20"
@@ -90,3 +90,43 @@ class ProductosAPIView(viewsets.GenericViewSet):
         fs_query_cats = db.collection("CategoriaProducto").get()
         rests = self.aux_fill_missing_fields(rests, fs_query_cats)
         return Response(rests)
+
+    # @method_decorator(vary_on_headers("Authorization"))
+    # @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(60 * 60))
+    def list_rest_delivery(self, request, id_rest):
+        if "20-" in id_rest:
+            id_rest = "20"
+        tarifas_api = requests.get(f"{API_Tarifas}/tarifav/{id_rest}/").json()
+        tarifas_domi_api = requests.get(f"{API_Tarifas}/tarifav/3/").json()
+        fs_query_prods = db.collection("Producto").get()
+        rests = []
+        for prod in fs_query_prods:
+            if not prod.id in tarifas_api or not prod.id in tarifas_domi_api:
+                continue
+            rests.append(
+                {"id": prod.id}
+                | prod.to_dict()
+                | {"Precio": tarifas_api[prod.id]["precio"]}
+            )
+        fs_query_cats = db.collection("CategoriaProducto").get()
+        rests = self.aux_fill_missing_fields(rests, fs_query_cats)
+        return Response(rests)
+
+
+def list_rest_delivery(id_rest):
+    if "20-" in id_rest:
+        id_rest = "20"
+    tarifas_api = requests.get(f"{API_Tarifas}/tarifav/{id_rest}/").json()
+    tarifas_domi_api = requests.get(f"{API_Tarifas}/tarifav/3/").json()
+    fs_query_prods = db.collection("Producto").get()
+    rests = []
+    for prod in fs_query_prods:
+        if not prod.id in tarifas_api or not prod.id in tarifas_domi_api:
+            continue
+        rests.append(
+            {"id": prod.id}
+            | prod.to_dict()
+            | {"Precio": tarifas_api[prod.id]["precio"]}
+        )
+    return rests

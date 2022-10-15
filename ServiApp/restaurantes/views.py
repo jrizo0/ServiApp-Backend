@@ -14,6 +14,8 @@ from django.conf import settings
 
 from django.core.exceptions import PermissionDenied
 
+from productos.views import list_rest_delivery
+
 
 API_Restaurantes = settings.SA_API_URL + "/restaurantes"
 API_Aforo = settings.AFORO_API_URL + "/aforo"
@@ -62,10 +64,30 @@ class RestauranteAPIView(viewsets.GenericViewSet):
         return rests
 
     # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(30 * 1))
+    @method_decorator(cache_page(60 * 60))
     def list(self, request):
         return Response(self.get_queryset())
 
     def aforo(self, request, id_rest):
         aforo = requests.get(f"{API_Aforo}/get/{id_rest}/").json()
         return Response(aforo)
+
+    def get_queryset_delivery(self, request):
+        fs_query_rests = db.collection("RestauranteDomicilio").get()
+        fs_query_cats = db.collection("CategoriaRestaurante").get()
+        rests = [{"id": doc.id} | doc.to_dict() for doc in fs_query_rests]
+        rests = self.aux_fill_missing_fields(rests, fs_query_cats)
+        for i in range(len(rests)):
+            rest_id = rests[i]["id"]
+            rests[i]["Productos"] = list_rest_delivery(rest_id)
+            if len(rests[i]["Productos"]) == 0:
+                continue
+            aforo = requests.get(f"{API_Aforo}/get/{rest_id}/").json()
+            rests[i] = rests[i] | aforo
+        rests = [rest for rest in rests if len(rest["Productos"]) > 0]
+        return rests
+
+    # @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(60 * 60))
+    def list_delivery(self, request):
+        return Response(self.get_queryset_delivery(request))

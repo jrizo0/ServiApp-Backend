@@ -10,7 +10,13 @@
 - delete delete tarjeta
 - fecha tarjeta
 - guardar la url de tarjeta dependiendo del nombre
+- sumar cantidad(bueno para sumar desde pantalla prod)?
 paycart: guardar factura en bd de serviciosali, tablas (ventas, ventasdomi) en bd
-modificar prod en carrito definir:
-    sumar cantidad(bueno para sumar desde pantalla prod)?
-    sobreescribir cantidad(bueno para modificar desde pantalla carrito)?
+
+Domiclios:
+- list restaurantes con productos a domicilio
+- list productos por restaurante con precio a domicilio
+
+Ordenes:
+- cambiar estado pedido
+

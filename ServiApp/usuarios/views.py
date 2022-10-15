@@ -66,17 +66,21 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         )
         return Response(
             {
+                "Domicilio": user_fs["DomicilioCarro"],
                 "Restaurante": {"id": user_fs["RestauranteCarro"]}
                 | rest_info.to_dict(),
                 "Productos": cart_w_info,
             }
         )
 
-    def add_prod_cart(self, request, id_prod, cant, id_rest):
+    def add_prod_cart(self, request, id_prod, cant, id_rest, delivery):
         uid = self.request.query_params.get("uid")
         if cant == 0:
             return Response({"msg": "Cantidad es 0"})
         user = db.collection("Usuario").document(uid).get().to_dict()
+        if user["DomicilioCarro"] != "" and user["DomicilioCarro"] != delivery:
+            return Response({"msg": "No coincide modalidad de pedido"})
+
         id_rest_query_api = id_rest
         if "20-" in id_rest_query_api:
             id_rest_query_api = "20"
@@ -91,12 +95,15 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if user["RestauranteCarro"] == "":
             db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
         cart = user["Carro"]
-        cart[id_prod] = {}  # elimina lo anterior
+        if not cart.get(id_prod):
+            cart[id_prod] = {}
         cart[id_prod]["Precio"] = price
-        cart[id_prod]["Cantidad"] = cant
-        # TODO: Definir. suma cantidad a la anterior o sobreescribe la cantidad
-        # cart[id_prod]["Cantidad"] = cart[id_prod]["Cantidad"] + cant if cart[id_prod]["Cantidad"] else cant
-        db.collection("Usuario").document(uid).update({"Carro": cart})
+        cart[id_prod]["Cantidad"] = (
+            cart[id_prod]["Cantidad"] + cant if cart[id_prod].get("Cantidad") else cant
+        )
+        db.collection("Usuario").document(uid).update(
+            {"Carro": cart, "DomicilioCarro": delivery}
+        )
         return Response({"msg": "Producto añadido al carrito"})
 
     def remove_prod_cart(self, request, id_prod):
@@ -106,13 +113,15 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         cart.pop(id_prod)
         db.collection("Usuario").document(uid).update({"Carro": cart})
         if not cart:
-            db.collection("Usuario").document(uid).update({"RestauranteCarro": ""})
+            db.collection("Usuario").document(uid).update(
+                {"RestauranteCarro": "", "DomicilioCarro": ""}
+            )
         return Response({"msg": "Producto eliminado del carrito"})
 
     def clear_cart(self, request):
         uid = self.request.query_params.get("uid")
         db.collection("Usuario").document(uid).update(
-            {"RestauranteCarro": "", "Carro": {}}
+            {"RestauranteCarro": "", "Carro": {}, "DomicilioCarro": ""}
         )
         return Response({"msg": "Carrito vaciado"})
 
@@ -126,13 +135,12 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Usuario": uid,
             "Carro": user_fs["Carro"],
             "Domicilio": request.data["Domicilio"],
-            # 0 por defecto, el pedido no se ha confirmado?
-            "Estado": 0,  # request.data["Estado"],
+            "Estado": 0,
             "Fecha": dt,
             "Restaurante": user_fs["RestauranteCarro"],
             "Tarjeta": request.data["Tarjeta"],
         }
-        fs_doc = db.collection("Ordenes").add(new_order)
+        fs_doc = db.collection("Orden").add(new_order)
         new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
         db.collection("Usuario").document(uid).update(
             {"RestauranteCarro": "", "Carro": {}}
