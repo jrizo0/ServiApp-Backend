@@ -224,6 +224,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "DeviceToken": usu_form["DeviceToken"],
             "Rol": "Usuario",  # Por defecto rol usuario
             "RestauranteCarro": "",  # Por defecto vacio
+            "DomicilioCarro": "",  # Por defecto vacio
             "Telefono": usu_form["Telefono"],
             "Carro": {},
         }
