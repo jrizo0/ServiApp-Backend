@@ -42,12 +42,15 @@
 
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
+from firebase_admin import db as dbrt
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
 if not firebase_admin._apps:
     cred = credentials.Certificate(settings.FIREBASE_SETTINGS)
-    firebase_admin.initialize_app(cred)
+    firebase_admin.initialize_app(
+        cred, {"databaseURL": "https://serviapp-e9a34-default-rtdb.firebaseio.com/"}
+    )
 
 db = firestore.client()
 
@@ -55,31 +58,38 @@ db = firestore.client()
 # class SAAuth:
 def fb_valid_req_token(request):
     try:
-        auth_token = request.META.get('HTTP_AUTHORIZATION')
+        auth_token = request.META.get("HTTP_AUTHORIZATION")
         token = auth_token.replace("Bearer ", "")
         print("token: " + token)
         decoded_token = auth.verify_id_token(token)
-        firebase_user_id = decoded_token['user_id']
+        firebase_user_id = decoded_token["user_id"]
         print("fb user id: " + firebase_user_id)
         return True
     except:
         return False
-    
+
+
 def fb_valid_req_token_uid(request):
     uid = request.query_params.get("uid")
     print("uid req: " + uid)
     try:
-        auth_token = request.META.get('HTTP_AUTHORIZATION')
+        auth_token = request.META.get("HTTP_AUTHORIZATION")
         token = auth_token.replace("Bearer ", "")
         print("token: " + token)
         decoded_token = auth.verify_id_token(token)
-        firebase_user_id = decoded_token['user_id']
+        firebase_user_id = decoded_token["user_id"]
         print("fb user id: " + firebase_user_id)
         if uid != firebase_user_id:
             return False
         return True
     except:
         return False
+
+
+# -------- database real time
+# id_order = "sadñlfdksjs"
+# orders_ref = db.reference('ordenes')
+# orders_ref.set({id_order: {"estado": 2}})
 
 # t = db.collection("Ordenes").add({"test": "test"})
 # print("1", t[0])
@@ -129,7 +139,7 @@ def fb_valid_req_token_uid(request):
 # data = {'nombre': 'MIRADOR', 'descripcion': 'Descripcion del mirador', 'categoria': '1'}
 # db.collection('restaurantes').document('11').set(data) #.delete()
 
-# result = db.collection('restaurantes').get() 
+# result = db.collection('restaurantes').get()
 # for r in result:
 #     print(r.to_dict())
 
@@ -140,7 +150,7 @@ def fb_valid_req_token_uid(request):
 # docs =  db.collection('restaurantes').where('nombre', '==', 'MIRADOR').get()
 # for d in docs:
 #     print(d.to_dict())
-#...
+# ...
 
 # db_data = db.collection('restaurantes').where('categoria', '==', '1').get()
 # data = {doc.id: doc.to_dict() for doc in db_data}
@@ -162,6 +172,3 @@ def fb_valid_req_token_uid(request):
 # print(list)
 
 # print(list(db_data))
-
-
-

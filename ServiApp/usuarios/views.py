@@ -13,7 +13,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 
-from ServiApp.firebase import db, fb_valid_req_token_uid, auth
+from ServiApp.firebase import db, fb_valid_req_token_uid, auth, dbrt
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
@@ -135,13 +135,15 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Usuario": uid,
             "Carro": user_fs["Carro"],
             "Domicilio": request.data["Domicilio"],
-            "Estado": 0,
+            # "Estado": 0,
             "Fecha": dt,
             "Restaurante": user_fs["RestauranteCarro"],
             "Tarjeta": request.data["Tarjeta"],
         }
         fs_doc = db.collection("Orden").add(new_order)
         new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
+        orders_ref = dbrt.reference(f'ordenes/{new_order["id"]}')
+        orders_ref.set({"estado": -1})
         db.collection("Usuario").document(uid).update(
             {"RestauranteCarro": "", "Carro": {}}
         )
