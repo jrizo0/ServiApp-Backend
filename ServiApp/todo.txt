@@ -19,4 +19,10 @@ Domiclios:
 
 Ordenes:
 - cambiar estado pedido
+- listar ordenes(usu, rest)
+- calificacion
+
+Domiciliario:
+ ver productos de orden
+
 

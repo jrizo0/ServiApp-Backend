@@ -139,6 +139,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Fecha": dt,
             "Restaurante": user_fs["RestauranteCarro"],
             "Tarjeta": request.data["Tarjeta"],
+            "Total": request.data["Total"],
         }
         fs_doc = db.collection("Orden").add(new_order)
         new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
@@ -281,3 +282,27 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         return Response(
             {"status": 200, "msg": f"Sucessfully updated push token to user: {uid}"}
         )
+
+    def list_orders(self, request, role):
+        uid = self.request.query_params.get("uid")
+        orders_fs = db.collection("Orden").where(role, "==", uid).get()
+        res = []
+        for order in orders_fs:
+            order = order.to_dict()
+            rest = db.collection("Restaurante").document(order["Restaurante"]).get()
+            if not rest.exists: continue
+            res.append(order | {"Restaurante": rest.to_dict()})
+
+        return Response(res)
+
+    def rate_order(self, request):
+        uid = self.request.query_params.get("uid")
+        doc = db.collection("Orden").document(request.data["id"])
+        order = doc.get().to_dict()
+        if order["Usuario"] != uid: return Response({"msg": f"El usuario no corresponde con el comprador"})
+        doc.update({"Calificacion": request.data["Calificacion"]})
+        return Response({"msg": f"Orden calificada"})
+
+
+
+

@@ -21,6 +21,9 @@ usu_update = UsuarioAPIView.as_view({"put": "update"})
 usu_change_pass = UsuarioAPIView.as_view({"put": "change_pass"})
 usu_update_device_token = UsuarioAPIView.as_view({"put": "update_device_token"})
 
+usu_list_orders = UsuarioAPIView.as_view({"get": "list_orders"})
+usu_rate_order = UsuarioAPIView.as_view({"post": "rate_order"})
+
 urlpatterns = [
     path("", usu_get),
 
@@ -38,4 +41,7 @@ urlpatterns = [
     path("update/", usu_update),
     path("changepass/", usu_change_pass),
     path("dt/", usu_update_device_token),
+
+    path("orders/<str:role>/", usu_list_orders),
+    path("rateorder/", usu_rate_order),
 ]
