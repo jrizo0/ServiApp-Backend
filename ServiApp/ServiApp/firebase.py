@@ -85,6 +85,9 @@ def fb_valid_req_token_uid(request):
     except:
         return False
 
+# t = db.collection("Orden")
+# t2 = t.where("Usuario", "==", "24").get()
+# print([e.to_dict() for e in t2])
 
 # -------- database real time
 # id_order = "sadñlfdksjs"

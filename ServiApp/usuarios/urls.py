@@ -42,6 +42,6 @@ urlpatterns = [
     path("changepass/", usu_change_pass),
     path("dt/", usu_update_device_token),
 
-    path("orders/<str:role>/", usu_list_orders),
+    path("orders/<str:role>/<int:delivery>/", usu_list_orders),
     path("rateorder/", usu_rate_order),
 ]

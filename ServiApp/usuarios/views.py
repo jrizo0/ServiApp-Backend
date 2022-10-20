@@ -283,26 +283,31 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             {"status": 200, "msg": f"Sucessfully updated push token to user: {uid}"}
         )
 
-    def list_orders(self, request, role):
+    def list_orders(self, request, role, delivery):
+        # delivery = 0,1,2
         uid = self.request.query_params.get("uid")
-        orders_fs = db.collection("Orden").where(role, "==", uid).get()
+        orders_fs = db.collection("Orden")
+        if uid != -1:
+            orders_fs = orders_fs.where(role, "==", uid)
+        if delivery == 0:
+            orders_fs = orders_fs.where("Domicilio", "==", False)
+        elif delivery == 1:
+            orders_fs = orders_fs.where("Domicilio", "==", True)
+        orders_fs = orders_fs.get()
         res = []
         for order in orders_fs:
-            order = order.to_dict()
-            rest = db.collection("Restaurante").document(order["Restaurante"]).get()
-            if not rest.exists: continue
-            res.append(order | {"Restaurante": rest.to_dict()})
-
+            order_inf = order.to_dict()
+            rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
+            if not rest.exists:
+                continue
+            res.append({"id": order.id} | order_inf | {"Restaurante": rest.to_dict()})
         return Response(res)
 
     def rate_order(self, request):
         uid = self.request.query_params.get("uid")
         doc = db.collection("Orden").document(request.data["id"])
         order = doc.get().to_dict()
-        if order["Usuario"] != uid: return Response({"msg": f"El usuario no corresponde con el comprador"})
+        if order["Usuario"] != uid:
+            return Response({"msg": f"El usuario no corresponde con el comprador"})
         doc.update({"Calificacion": request.data["Calificacion"]})
         return Response({"msg": f"Orden calificada"})
-
-
-
-
