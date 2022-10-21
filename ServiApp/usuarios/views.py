@@ -140,6 +140,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Restaurante": user_fs["RestauranteCarro"],
             "Tarjeta": request.data["Tarjeta"],
             "Total": request.data["Total"],
+            "Direccion": request.data["Direccion"],
         }
         fs_doc = db.collection("Orden").add(new_order)
         new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
@@ -300,7 +301,11 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
             if not rest.exists:
                 continue
-            res.append({"id": order.id} | order_inf | {"Restaurante": rest.to_dict()})
+            rest = rest.to_dict()
+            for id_p in order_inf["Carro"]:
+                prod = db.collection("Producto").document(id_p).get().to_dict()
+                order_inf["Carro"][id_p] = order_inf["Carro"][id_p] | prod
+            res.append({"id": order.id} | order_inf | {"Restaurante": rest})
         return Response(res)
 
     def rate_order(self, request):
