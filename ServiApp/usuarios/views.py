@@ -314,5 +314,5 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         order = doc.get().to_dict()
         if order["Usuario"] != uid:
             return Response({"msg": f"El usuario no corresponde con el comprador"})
-        doc.update({"Reseña": request.data["Reseña"]})
+        doc.update({"Reseña": request.data["Resena"]})
         return Response({"msg": f"Orden calificada"})
