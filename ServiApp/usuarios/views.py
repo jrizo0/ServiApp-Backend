@@ -306,7 +306,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
                 prod = db.collection("Producto").document(id_p).get().to_dict()
                 order_inf["Carro"][id_p] = order_inf["Carro"][id_p] | prod
             res.append({"id": order.id} | order_inf | {"Restaurante": rest})
-        return Response(res)
+        return Response(res[::-1])
 
     def rate_order(self, request):
         uid = self.request.query_params.get("uid")
