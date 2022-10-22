@@ -288,7 +288,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         # delivery = 0,1,2
         uid = self.request.query_params.get("uid")
         orders_fs = db.collection("Orden")
-        if uid != -1:
+        if uid == "Usuario":
             orders_fs = orders_fs.where(role, "==", uid)
         if delivery == 0:
             orders_fs = orders_fs.where("Domicilio", "==", False)
