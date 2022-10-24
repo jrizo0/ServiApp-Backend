@@ -310,7 +310,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
                 prod = db.collection("Producto").document(id_p).get().to_dict()
                 order_inf["Carro"][id_p] = order_inf["Carro"][id_p] | prod
             order = {"id": order.id} | order_inf | {"Restaurante": rest}
-            if role == "Domicilio" or role == "Restaurante":
+            if role == "Domiciliario" or role == "Restaurante":
                 user = self.get_queryset(order_inf["Usuario"])
                 order = order | {"Usuario": user} 
             res.append(order)
