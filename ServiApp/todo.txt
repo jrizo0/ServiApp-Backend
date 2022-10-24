@@ -1,3 +1,4 @@
+Arreglar en front logout queda gurdado el user anterior
 - get info producto
 - get carrito(info producto, restaurnate, cantidadprod)
 - post eliminar un producto carrito
