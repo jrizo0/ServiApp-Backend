@@ -1,3 +1,4 @@
+from firebase_admin import firestore
 from rest_framework import viewsets
 
 import requests
@@ -141,6 +142,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "Tarjeta": request.data["Tarjeta"],
             "Total": request.data["Total"],
             "Direccion": request.data["Direccion"],
+            "Finalizado": False
         }
         fs_doc = db.collection("Orden").add(new_order)
         new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
@@ -231,6 +233,8 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "DomicilioCarro": "",  # Por defecto vacio
             "Telefono": usu_form["Telefono"],
             "Carro": {},
+            "DomiciliosAceptados": [],
+            "DomiciliosRechazados": [],
         }
         db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
 
@@ -316,3 +320,34 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             return Response({"msg": f"El usuario no corresponde con el comprador"})
         doc.update({"Resena": request.data["Resena"]})
         return Response({"msg": f"Orden calificada"})
+
+    def finish_order(self, request):
+        doc = db.collection("Orden").document(request.data["id"])
+        doc.update({"Finalizado": True})
+        return Response({"msg": f"Orden finalizada"})
+
+    def accept_delivery(self, request):
+        uid = self.request.query_params.get("uid")
+        user = db.collection("Usuario").document(uid)
+        if not "DomiciliosAceptados" in user.get().to_dict():
+            user.update({"DomiciliosAceptados": []})
+        user.update({"DomiciliosAceptados": firestore.ArrayUnion([request.data["id"]])})
+        return Response({"msg": f"Domicilio aceptado"})
+
+    def reject_delivery(self, request):
+        uid = self.request.query_params.get("uid")
+        user = db.collection("Usuario").document(uid)
+        if not "DomiciliosAceptados" in user.get().to_dict():
+            user.update({"DomiciliosRechazados": []})
+        user.update({"DomiciliosRechazados": firestore.ArrayUnion([request.data["id"]])})
+        return Response({"msg": f"Domicilio rechazado"})
+
+    def list_delivery(self, request):
+        uid = self.request.query_params.get("uid")
+        rejected = db.collection("Usuario").document(uid).get()
+        rejected = rejected.to_dict()["DomiciliosRechazados"]
+        deliveries = db.collection("Orden").where("Finalizado", "!=", False).get()
+        #TODO: sacar los rechazados.
+        print([d.to_dict() for d in deliveries])
+        
+        

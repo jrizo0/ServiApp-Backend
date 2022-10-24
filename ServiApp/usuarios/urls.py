@@ -23,6 +23,11 @@ usu_update_device_token = UsuarioAPIView.as_view({"put": "update_device_token"})
 
 usu_list_orders = UsuarioAPIView.as_view({"get": "list_orders"})
 usu_rate_order = UsuarioAPIView.as_view({"post": "rate_order"})
+usu_finish_order = UsuarioAPIView.as_view({"post": "finish_order"})
+
+usu_list_delivery = UsuarioAPIView.as_view({"get": "list_delivery"})
+usu_accept_delivery = UsuarioAPIView.as_view({"post": "accept_delivery"})
+usu_reject_delivery = UsuarioAPIView.as_view({"post": "reject_delivery"})
 
 urlpatterns = [
     path("", usu_get),
@@ -44,4 +49,8 @@ urlpatterns = [
 
     path("orders/<str:role>/<int:delivery>/", usu_list_orders),
     path("rateorder/", usu_rate_order),
+
+    path("delivery/", usu_list_delivery),
+    path("acceptdelivery/", usu_accept_delivery),
+    path("rejectdelivery/", usu_reject_delivery),
 ]
