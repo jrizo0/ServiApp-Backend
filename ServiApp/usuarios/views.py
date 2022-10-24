@@ -35,8 +35,7 @@ class FBUserRequestAuthenticated(BasePermission):
 class UsuarioAPIView(viewsets.GenericViewSet):
     permission_classes = [FBUserRequestAuthenticated]
 
-    def get_queryset(self):
-        uid = self.request.query_params.get("uid")
+    def get_queryset(self, uid):
         usu_api = requests.get(
             f"{API_Clientes}/{uid}/"
         )  # codcliente, nombre, direccion, email
@@ -49,7 +48,8 @@ class UsuarioAPIView(viewsets.GenericViewSet):
     # @method_decorator(vary_on_cookie)
     # @method_decorator(cache_page(60 * 1))
     def retrieve(self, request):
-        return Response(self.get_queryset())
+        uid = self.request.query_params.get("uid")
+        return Response(self.get_queryset(uid))
 
     def retrieve_cart(self, request):
         uid = self.request.query_params.get("uid")
@@ -241,9 +241,9 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
     def update(self, request):
-        if self.get_queryset() == []:  # Usuario no existe en fb
-            raise ValidationError()
         uid = self.request.query_params.get("uid")
+        if self.get_queryset(uid) == []:  # Usuario no existe en fb
+            raise ValidationError()
         # {(api) nombrecliente, direccion1, e_mail, (fs) Telefono}
         usu_form = request.data
         info_api = {
@@ -279,9 +279,9 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         )
 
     def update_device_token(self, request):
-        if self.get_queryset() == []:  # Usuario no existe en fb
-            raise ValidationError()
         uid = self.request.query_params.get("uid")
+        if self.get_queryset(uid) == []:  # Usuario no existe en fb
+            raise ValidationError()
         new_token = {"DeviceToken": request.data["DeviceToken"]}
         db.collection("Usuario").document(uid).update(new_token)
         return Response(
@@ -309,8 +309,14 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             for id_p in order_inf["Carro"]:
                 prod = db.collection("Producto").document(id_p).get().to_dict()
                 order_inf["Carro"][id_p] = order_inf["Carro"][id_p] | prod
-            res.append({"id": order.id} | order_inf | {"Restaurante": rest})
-        return Response(res[::-1])
+            order = {"id": order.id} | order_inf | {"Restaurante": rest}
+            if role == "Domicilio" or role == "Restaurante":
+                user = self.get_queryset(order_inf["Usuario"])
+                order = order | {"Usuario": user} 
+            res.append(order)
+        res.sort(key = lambda r:r["Fecha"])
+        res = res[::-1]
+        return Response(res)
 
     def rate_order(self, request):
         uid = self.request.query_params.get("uid")
