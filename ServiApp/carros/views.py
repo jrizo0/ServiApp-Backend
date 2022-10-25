@@ -76,7 +76,7 @@ class CartAPIView(viewsets.GenericViewSet):
             cart[id_prod]["Cantidad"] + cant if cart[id_prod].get("Cantidad") else cant
         )
         db.collection("Usuario").document(uid).update(
-            {"Carro": cart, "DomicilioCarro": True if delivery == 0 else False}
+            {"Carro": cart, "DomicilioCarro": delivery}
         )
         return Response({"msg": "Producto añadido al carrito"})
 
