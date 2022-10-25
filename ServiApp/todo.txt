@@ -22,8 +22,8 @@ Ordenes:
 - cambiar estado pedido
 - listar ordenes(usu, rest)
 - calificacion
- direccion en fs
- info_productos en orden
+- direccion en fs
+- info_productos en orden
 
 Domiciliario:
  ver productos de orden

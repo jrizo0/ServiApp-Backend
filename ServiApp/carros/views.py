@@ -105,10 +105,14 @@ class CartAPIView(viewsets.GenericViewSet):
         user_fs = db.collection("Usuario").document(uid).get()
         user_fs = user_fs.to_dict()
         dt = datetime.now()
+        cart = user_fs["Carro"]
+        for id_p in cart:
+            prod = db.collection("Producto").document(id_p).get().to_dict()
+            cart[id_p] = cart[id_p] | prod
         new_order = {
             "Usuario": uid,
-            "Carro": user_fs["Carro"],
-            "Domicilio": request.data["Domicilio"],
+            "Carro": cart,
+            "Domicilio": user_fs["DomicilioCarro"],
             "Domiciliario": "",
             "Fecha": dt,
             "Restaurante": user_fs["RestauranteCarro"],
@@ -122,7 +126,7 @@ class CartAPIView(viewsets.GenericViewSet):
         orders_ref = dbrt.reference(f'ordenes/{new_order["id"]}')
         orders_ref.set({"estado": -1})
         db.collection("Usuario").document(uid).update(
-            {"RestauranteCarro": "", "Carro": {}}
+            {"RestauranteCarro": "", "Carro": {}, "DomicilioCarro": ""}
         )
         # TODO: guardar factura en serviciosalimentacion-api.
         return Response(new_order)

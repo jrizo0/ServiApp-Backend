@@ -65,9 +65,9 @@ class OrdenesAPIView(viewsets.GenericViewSet):
             if not rest.exists:
                 continue
             rest = rest.to_dict()
-            for id_p in order_inf["Carro"]:
-                prod = db.collection("Producto").document(id_p).get().to_dict()
-                order_inf["Carro"][id_p] = order_inf["Carro"][id_p] | prod
+            # for id_p in order_inf["Carro"]:
+            #     prod = db.collection("Producto").document(id_p).get().to_dict()
+            #     order_inf["Carro"][id_p] = order_inf["Carro"][id_p] | prod
             order = {"id": order.id} | order_inf | {"Restaurante": rest}
             if role == "Domiciliario" or role == "Restaurante":
                 user = UsuarioAPIView.get_queryset(UsuarioAPIView, order_inf["Usuario"])
