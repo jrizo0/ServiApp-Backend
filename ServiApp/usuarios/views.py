@@ -51,108 +51,6 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         uid = self.request.query_params.get("uid")
         return Response(self.get_queryset(uid))
 
-    def retrieve_cart(self, request):
-        uid = self.request.query_params.get("uid")
-        user_fs = db.collection("Usuario").document(uid).get()
-        user_fs = user_fs.to_dict()
-        if not user_fs["Carro"]:
-            return Response({})
-        cart_w_info = []
-        for id_prod, item_cart_info in user_fs["Carro"].items():
-            prod_info = db.collection("Producto").document(id_prod).get().to_dict()
-            cart_w_info.append({"id": id_prod} | item_cart_info | prod_info)
-
-        rest_info = (
-            db.collection("Restaurante").document(user_fs["RestauranteCarro"]).get()
-        )
-        return Response(
-            {
-                "Domicilio": user_fs["DomicilioCarro"],
-                "Restaurante": {"id": user_fs["RestauranteCarro"]}
-                | rest_info.to_dict(),
-                "Productos": cart_w_info,
-            }
-        )
-
-    def add_prod_cart(self, request, id_prod, cant, id_rest, delivery):
-        uid = self.request.query_params.get("uid")
-        if cant == 0:
-            return Response({"msg": "Cantidad es 0"})
-        user = db.collection("Usuario").document(uid).get().to_dict()
-        if user["DomicilioCarro"] != "" and user["DomicilioCarro"] != delivery:
-            return Response({"msg": "No coincide modalidad de pedido"})
-
-        id_rest_query_api = id_rest
-        if "20-" in id_rest_query_api:
-            id_rest_query_api = "20"
-        price = requests.get(f"{API_Tarifas}/{id_rest_query_api}/{id_prod}/").json()[
-            "precio"
-        ]
-        if user["RestauranteCarro"] != "" and id_rest != user["RestauranteCarro"]:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={"msg": "Restaurante no coincide con el restaurante del carrito"},
-            )
-        if user["RestauranteCarro"] == "":
-            db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
-        cart = user["Carro"]
-        if not cart.get(id_prod):
-            cart[id_prod] = {}
-        cart[id_prod]["Precio"] = price
-        cart[id_prod]["Cantidad"] = (
-            cart[id_prod]["Cantidad"] + cant if cart[id_prod].get("Cantidad") else cant
-        )
-        db.collection("Usuario").document(uid).update(
-            {"Carro": cart, "DomicilioCarro": delivery}
-        )
-        return Response({"msg": "Producto añadido al carrito"})
-
-    def remove_prod_cart(self, request, id_prod):
-        uid = self.request.query_params.get("uid")
-        user = db.collection("Usuario").document(uid).get().to_dict()
-        cart = user["Carro"]
-        cart.pop(id_prod)
-        db.collection("Usuario").document(uid).update({"Carro": cart})
-        if not cart:
-            db.collection("Usuario").document(uid).update(
-                {"RestauranteCarro": "", "DomicilioCarro": ""}
-            )
-        return Response({"msg": "Producto eliminado del carrito"})
-
-    def clear_cart(self, request):
-        uid = self.request.query_params.get("uid")
-        db.collection("Usuario").document(uid).update(
-            {"RestauranteCarro": "", "Carro": {}, "DomicilioCarro": ""}
-        )
-        return Response({"msg": "Carrito vaciado"})
-
-    def pay_cart(self, request):
-        # request.data = Carro:map, Domicilio:boolean, Estado, Fecha, Restaurante, Tarjeta
-        uid = self.request.query_params.get("uid")
-        user_fs = db.collection("Usuario").document(uid).get()
-        user_fs = user_fs.to_dict()
-        dt = datetime.now()
-        new_order = {
-            "Usuario": uid,
-            "Carro": user_fs["Carro"],
-            "Domicilio": request.data["Domicilio"],
-            # "Estado": 0,
-            "Fecha": dt,
-            "Restaurante": user_fs["RestauranteCarro"],
-            "Tarjeta": request.data["Tarjeta"],
-            "Total": request.data["Total"],
-            "Direccion": request.data["Direccion"],
-            "Finalizado": False
-        }
-        fs_doc = db.collection("Orden").add(new_order)
-        new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
-        orders_ref = dbrt.reference(f'ordenes/{new_order["id"]}')
-        orders_ref.set({"estado": -1})
-        db.collection("Usuario").document(uid).update(
-            {"RestauranteCarro": "", "Carro": {}}
-        )
-        # TODO: guardar factura en serviciosalimentacion-api.
-        return Response(new_order)
 
     def list_cards(self, request):
         uid = self.request.query_params.get("uid")
@@ -257,17 +155,14 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if info_api.status_code in [201, 200]:  # Usuario no existe en api
             raise ValidationError()
         info_api = info_api.json()
-
         auth.update_user(
             uid=str(info_api["codcliente"]),
             email=info_api["e_mail"],
         )
-
         info_fs = {"Telefono": usu_form["Telefono"]}
         db.collection("Usuario").document(uid).update(
             {"Telefono": usu_form["Telefono"]}
         )
-
         return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
     def change_pass(self, request):
@@ -288,72 +183,70 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             {"status": 200, "msg": f"Sucessfully updated push token to user: {uid}"}
         )
 
-    def list_orders(self, request, role, delivery):
-        # delivery = 0,1,2
-        uid = self.request.query_params.get("uid")
-        orders_fs = db.collection("Orden")
-        if role == "Usuario":
-            orders_fs = orders_fs.where("Usuario", "==", uid)
-        if delivery == 0:
-            orders_fs = orders_fs.where("Domicilio", "==", False)
-        elif delivery == 1:
-            orders_fs = orders_fs.where("Domicilio", "==", True)
-        orders_fs = orders_fs.get()
-        res = []
-        for order in orders_fs:
-            order_inf = order.to_dict()
-            rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
-            if not rest.exists:
-                continue
-            rest = rest.to_dict()
-            for id_p in order_inf["Carro"]:
-                prod = db.collection("Producto").document(id_p).get().to_dict()
-                order_inf["Carro"][id_p] = order_inf["Carro"][id_p] | prod
-            order = {"id": order.id} | order_inf | {"Restaurante": rest}
-            if role == "Domiciliario" or role == "Restaurante":
-                user = self.get_queryset(order_inf["Usuario"])
-                order = order | {"Usuario": user} 
-            res.append(order)
-        res.sort(key = lambda r:r["Fecha"])
-        res = res[::-1]
-        return Response(res)
 
-    def rate_order(self, request):
-        uid = self.request.query_params.get("uid")
-        doc = db.collection("Orden").document(request.data["id"])
-        order = doc.get().to_dict()
-        if order["Usuario"] != uid:
-            return Response({"msg": f"El usuario no corresponde con el comprador"})
-        doc.update({"Resena": request.data["Resena"]})
-        return Response({"msg": f"Orden calificada"})
+class DomiciliarioAPIView(viewsets.GenericViewSet):
+    def create(self, request):
+        usu_form = request.data
+        info_api = {
+            "nombrecliente": usu_form["nombrecliente"],
+            "direccion1": usu_form["direccion1"],
+            "e_mail": usu_form["e_mail"],
+            "tipo": 3,  # Por defecto usuario tipo estudiante
+        }
+        # NOTE: no se agrega en bd de servicios de alimentacion.
+        # info_api = requests.post(f"{API_Clientes}/", json=info_api)
+        # if not info_api.status_code in [201, 200]:
+        #     raise ValidationError()
+        # info_api = info_api.json()
 
-    def finish_order(self, request):
-        doc = db.collection("Orden").document(request.data["id"])
-        doc.update({"Finalizado": True})
-        return Response({"msg": f"Orden finalizada"})
+        auth.create_user(
+            uid=str(info_api["codcliente"]),
+            email=info_api["e_mail"],
+            password=usu_form["password"],
+        )
 
-    def accept_delivery(self, request):
-        uid = self.request.query_params.get("uid")
-        user = db.collection("Usuario").document(uid)
-        if not "DomiciliosAceptados" in user.get().to_dict():
-            user.update({"DomiciliosAceptados": []})
-        user.update({"DomiciliosAceptados": firestore.ArrayUnion([request.data["id"]])})
-        return Response({"msg": f"Domicilio aceptado"})
+        info_fs = {
+            "DeviceToken": usu_form["DeviceToken"],
+            "Rol": "Domiciliario",  # Por defecto rol usuario
+            "Telefono": usu_form["Telefono"],
+            "DomiciliosAceptados": [],
+            "DomiciliosRechazados": [],
+        }
+        db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
 
-    def reject_delivery(self, request):
-        uid = self.request.query_params.get("uid")
-        user = db.collection("Usuario").document(uid)
-        if not "DomiciliosAceptados" in user.get().to_dict():
-            user.update({"DomiciliosRechazados": []})
-        user.update({"DomiciliosRechazados": firestore.ArrayUnion([request.data["id"]])})
-        return Response({"msg": f"Domicilio rechazado"})
+        return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
-    def list_delivery(self, request):
-        uid = self.request.query_params.get("uid")
-        rejected = db.collection("Usuario").document(uid).get()
-        rejected = rejected.to_dict()["DomiciliosRechazados"]
-        deliveries = db.collection("Orden").where("Finalizado", "!=", False).get()
-        #TODO: sacar los rechazados.
-        print([d.to_dict() for d in deliveries])
-        
-        
+class RestauranteAPIView(viewsets.GenericViewSet):
+    # TODO: create
+    def create(self, request):
+        # usu_form = request.data
+        # info_api = {
+        #     "nombrecliente": usu_form["nombrecliente"],
+        #     "direccion1": usu_form["direccion1"],
+        #     "e_mail": usu_form["e_mail"],
+        #     "tipo": 3,  # Por defecto usuario tipo estudiante
+        # }
+        # # NOTE: no se agrega en bd de servicios de alimentacion.
+        # # info_api = requests.post(f"{API_Clientes}/", json=info_api)
+        # # if not info_api.status_code in [201, 200]:
+        # #     raise ValidationError()
+        # # info_api = info_api.json()
+        #
+        # auth.create_user(
+        #     uid=str(info_api["codcliente"]),
+        #     email=info_api["e_mail"],
+        #     password=usu_form["password"],
+        # )
+        #
+        # info_fs = {
+        #     "DeviceToken": usu_form["DeviceToken"],
+        #     "Rol": "Restaurante",  # Por defecto rol usuario
+        #     "Telefono": usu_form["Telefono"],
+        #     "DomiciliosAceptados": [],
+        #     "DomiciliosRechazados": [],
+        # }
+        # db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
+        #
+        # return Response(info_api | {"Telefono": info_fs["Telefono"]})
+
+        return Response("to-do")
