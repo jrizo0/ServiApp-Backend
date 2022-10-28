@@ -47,12 +47,13 @@ class OrdenesAPIView(viewsets.GenericViewSet):
     def retrieve(self, request):
         return Response(self.get_queryset())
 
+    # TODO: arreglar para todos los los roles.
     def list(self, request, role, delivery):
         # delivery = 0,1,2
         uid = self.request.query_params.get("uid")
         orders_fs = db.collection("Orden")
-        if role == "Usuario":
-            orders_fs = orders_fs.where("Usuario", "==", uid)
+        # if role == "Usuario":
+        orders_fs = orders_fs.where(role, "==", uid)
         if delivery == 0:
             orders_fs = orders_fs.where("Domicilio", "==", False)
         elif delivery == 1:
