@@ -26,6 +26,6 @@ Ordenes:
 - info_productos en orden
 
 Domiciliario:
- ver productos de orden
+- ver productos de orden
 
 
