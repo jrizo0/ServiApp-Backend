@@ -127,7 +127,7 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         deliveries_fs = (
             db.collection("Orden")
             .where("Finalizado", "==", False)
-            .where("Domicilio", "==", True)
+            .where("Domicilio", "==", "1")
             .get()
         )
         deliveries = []

@@ -24,6 +24,7 @@ Ordenes:
 - calificacion
 - direccion en fs
 - info_productos en orden
+ arreglar view: list para rest y para domi
 
 Domiciliario:
 - ver productos de orden
