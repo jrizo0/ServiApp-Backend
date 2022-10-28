@@ -12,7 +12,7 @@ pay_cart = CartAPIView.as_view({"post": "pay"})
 
 urlpatterns = [
     path("", retrieve_cart),
-    path("add/<str:id_prod>/<int:cant>/<str:id_rest>/<str:delivery>/", add_prod_cart),
+    path("add/<str:id_prod>/<int:cant>/<str:id_rest>/<int:delivery>/", add_prod_cart),
     path("remove/<str:id_prod>/", remove_prod_cart),
     path("clear/", clear_cart),
     path("pay/", pay_cart),
