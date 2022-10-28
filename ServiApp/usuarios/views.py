@@ -117,16 +117,14 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if not info_api.status_code in [201, 200]:
             raise ValidationError()
         info_api = info_api.json()
-
         auth.create_user(
             uid=str(info_api["codcliente"]),
             email=info_api["e_mail"],
             password=usu_form["password"],
         )
-
         info_fs = {
             "DeviceToken": usu_form["DeviceToken"],
-            "Rol": "Usuario",  # Por defecto rol usuario
+            "Rol": "Usuario",
             "RestauranteCarro": "",  # Por defecto vacio
             "DomicilioCarro": "",  # Por defecto vacio
             "Telefono": usu_form["Telefono"],
@@ -135,7 +133,26 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "DomiciliosRechazados": [],
         }
         db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
+        return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
+    def create_domiciliary(self, request):
+        usu_form = request.data
+        info_api = {
+            "nombrecliente": usu_form["nombrecliente"],
+            "e_mail": usu_form["e_mail"],
+        }
+        uid = auth.create_user(
+            email=info_api["e_mail"],
+            password=usu_form["password"],
+        ).uid
+        info_fs = {
+            "DeviceToken": usu_form["DeviceToken"],
+            "Rol": "Domiciliario",
+            "Telefono": usu_form["Telefono"],
+            "DomiciliosAceptados": [],
+            "DomiciliosRechazados": [],
+        }
+        db.collection("Usuario").document(uid).set(info_fs)
         return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
     def update(self, request):

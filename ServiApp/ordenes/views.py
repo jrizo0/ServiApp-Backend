@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 
-from ServiApp.firebase import db, fb_valid_req_token
+from ServiApp.firebase import db, dbrt
 from django.conf import settings
 
 from django.core.exceptions import PermissionDenied
@@ -27,8 +27,8 @@ class FBAuthenticated(BasePermission):
     def __init__(self):
         self.enable_auth = False
 
-    def has_permission(self, request, view):
-        return not self.enable_auth or fb_valid_req_token(request)
+    # def has_permission(self, request, view):
+    #     return not self.enable_auth or fb_valid_req_token(request)
 
 
 class ReadOnly(BasePermission):
@@ -47,32 +47,29 @@ class OrdenesAPIView(viewsets.GenericViewSet):
     def retrieve(self, request):
         return Response(self.get_queryset())
 
-    # TODO: arreglar para todos los los roles.
     def list(self, request, role, delivery):
         # delivery = 0,1,2
         uid = self.request.query_params.get("uid")
         orders_fs = db.collection("Orden")
-        # if role == "Usuario":
-        orders_fs = orders_fs.where(role, "==", uid)
-        if delivery == 0:
-            orders_fs = orders_fs.where("Domicilio", "==", False)
-        elif delivery == 1:
-            orders_fs = orders_fs.where("Domicilio", "==", True)
+        if delivery != 2:
+            orders_fs = orders_fs.where("Domicilio", "==", delivery == 1)
+        orders_exclude = []
+        if role != "Domiciliario":
+            orders_fs = orders_fs.where(role, "==", uid)
+        else:
+            domiciliary = db.collection("Usuario").document(uid).get().to_dict()
+            orders_exclude = domiciliary["DomiciliosRechazados"]
         orders_fs = orders_fs.get()
         res = []
         for order in orders_fs:
+            if order.id in orders_exclude:
+                continue
             order_inf = order.to_dict()
             rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
             if not rest.exists:
                 continue
             rest = rest.to_dict()
-            # for id_p in order_inf["Carro"]:
-            #     prod = db.collection("Producto").document(id_p).get().to_dict()
-            #     order_inf["Carro"][id_p] = order_inf["Carro"][id_p] | prod
             order = {"id": order.id} | order_inf | {"Restaurante": rest}
-            if role == "Domiciliario" or role == "Restaurante":
-                user = UsuarioAPIView.get_queryset(UsuarioAPIView, order_inf["Usuario"])
-                order = order | {"Usuario": user}
             res.append(order)
         res.sort(key=lambda r: r["Fecha"])
         res = res[::-1]
@@ -90,6 +87,8 @@ class OrdenesAPIView(viewsets.GenericViewSet):
     def finish(self, request):
         doc = db.collection("Orden").document(request.data["id"])
         doc.update({"Finalizado": True})
+        order_rt = dbrt.reference(f'Ordenes/{request.data["id"]}')
+        order_rt.delete()
         return Response({"msg": f"Orden finalizada"})
 
     def accept_delivery(self, request):
@@ -112,28 +111,3 @@ class OrdenesAPIView(viewsets.GenericViewSet):
             {"DomiciliosRechazados": firestore.ArrayUnion([request.data["id"]])}
         )
         return Response({"msg": f"Domicilio rechazado"})
-
-    #Para domiciliarios
-    def list_delivery(self, request):
-        uid = self.request.query_params.get("uid")
-
-        user = db.collection("Usuario").document(uid)
-        if not "DomiciliosAceptados" in user.get().to_dict():
-            user.update({"DomiciliosAceptados": []})
-        if not "DomiciliosRechazados" in user.get().to_dict():
-            user.update({"DomiciliosRechazados": []})
-
-        rejected = db.collection("Usuario").document(uid).get()
-        rejected = rejected.to_dict()["DomiciliosRechazados"]
-        deliveries_fs = (
-            db.collection("Orden")
-            .where("Finalizado", "==", False)
-            .where("Domicilio", "==", "1")
-            .get()
-        )
-        deliveries = []
-        for delivery in deliveries_fs:
-            if delivery.id in rejected:
-                continue
-            deliveries.append({"id": delivery.id} | delivery.to_dict())
-        return Response(deliveries)

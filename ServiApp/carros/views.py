@@ -18,12 +18,13 @@ from ServiApp.firebase import db, fb_valid_req_token_uid, auth, dbrt
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
+from usuarios.views import UsuarioAPIView
+
 API_Clientes = settings.SA_API_URL + "/clientes"
 API_Tarifas = settings.SA_API_URL + "/tarifas"
 
 
 class CartAPIView(viewsets.GenericViewSet):
-
     def retrieve(self, request):
         uid = self.request.query_params.get("uid")
         user_fs = db.collection("Usuario").document(uid).get()
@@ -102,6 +103,7 @@ class CartAPIView(viewsets.GenericViewSet):
     def pay(self, request):
         # request.data = Carro:map, Domicilio:boolean, Estado, Fecha, Restaurante, Tarjeta
         uid = self.request.query_params.get("uid")
+        user_info = UsuarioAPIView.get_queryset(UsuarioAPIView, uid)
         user_fs = db.collection("Usuario").document(uid).get()
         user_fs = user_fs.to_dict()
         dt = datetime.now()
@@ -111,20 +113,34 @@ class CartAPIView(viewsets.GenericViewSet):
             cart[id_p] = cart[id_p] | prod
         new_order = {
             "Usuario": uid,
+            "UsuarioInfo": {
+                "nombrecliente": user_info["nombrecliente"],
+                "e_mail": user_info["e_mail"],
+            },
             "Carro": cart,
-            "Domicilio": user_fs["DomicilioCarro"],
+            "Tarjeta": request.data["Tarjeta"],
+            "Restaurante": user_fs["RestauranteCarro"],
+            "Domicilio": user_fs["DomicilioCarro"] == "1",
             "Domiciliario": "",
             "Fecha": dt,
-            "Restaurante": user_fs["RestauranteCarro"],
-            "Tarjeta": request.data["Tarjeta"],
             "Total": request.data["Total"],
             "Direccion": request.data["Direccion"],
-            "Finalizado": False
+            "Finalizado": False,
+            "Resena": {},
         }
         fs_doc = db.collection("Orden").add(new_order)
         new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
-        orders_ref = dbrt.reference(f'ordenes/{new_order["id"]}')
-        orders_ref.set({"estado": -1})
+        orders_ref = dbrt.reference(f'Ordenes/{new_order["id"]}')
+        rest = db.collection("Restaurante").document(user_fs["RestauranteCarro"]).get().to_dict()
+        orders_ref.set(
+            {
+                "NombreCliente": user_info["nombrecliente"],
+                "RestauranteImagen": rest["Imagen"],
+                "Total": request.data["Total"],
+                "Domicilio": user_fs["DomicilioCarro"] == "1",
+                "Estado": -1,
+            }
+        )
         db.collection("Usuario").document(uid).update(
             {"RestauranteCarro": "", "Carro": {}, "DomicilioCarro": ""}
         )
