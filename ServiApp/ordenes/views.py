@@ -51,26 +51,35 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         # delivery = 0,1,2
         uid = self.request.query_params.get("uid")
         orders_fs = db.collection("Orden")
+        res = []
         if delivery != 2:
             orders_fs = orders_fs.where("Domicilio", "==", delivery == 1)
-        orders_exclude = []
         if role != "Domiciliario":
             orders_fs = orders_fs.where(role, "==", uid)
+            orders_fs = orders_fs.get()
+            for order in orders_fs:
+                order_inf = order.to_dict()
+                rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
+                if not rest.exists:
+                    continue
+                rest = rest.to_dict()
+                order = {"id": order.id} | order_inf | {"Restaurante": rest}
+                res.append(order)
         else:
             domiciliary = db.collection("Usuario").document(uid).get().to_dict()
-            orders_exclude = domiciliary["DomiciliosRechazados"]
-        orders_fs = orders_fs.get()
-        res = []
-        for order in orders_fs:
-            if order.id in orders_exclude:
-                continue
-            order_inf = order.to_dict()
-            rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
-            if not rest.exists:
-                continue
-            rest = rest.to_dict()
-            order = {"id": order.id} | order_inf | {"Restaurante": rest}
-            res.append(order)
+            accepted_orders = domiciliary["DomiciliosAceptados"]
+            for id_order in accepted_orders:
+                order_inf = db.collection("Orden").document(id_order).get()
+                if not order_inf.exists:
+                    continue
+                order_inf = order_inf.to_dict()
+                rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
+                if not rest.exists:
+                    continue
+                rest = rest.to_dict()
+                order = {"id": id_order} | order_inf | {"Restaurante": rest}
+                res.append(order)
+
         res.sort(key=lambda r: r["Fecha"])
         res = res[::-1]
         return Response(res)

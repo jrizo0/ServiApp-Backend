@@ -120,7 +120,7 @@ class CartAPIView(viewsets.GenericViewSet):
             "Carro": cart,
             "Tarjeta": request.data["Tarjeta"],
             "Restaurante": user_fs["RestauranteCarro"],
-            "Domicilio": user_fs["DomicilioCarro"] == "1",
+            "Domicilio": user_fs["DomicilioCarro"],
             "Domiciliario": "",
             "Fecha": dt,
             "Total": request.data["Total"],
