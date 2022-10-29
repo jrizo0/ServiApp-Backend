@@ -12,6 +12,7 @@ finish = OrdenesAPIView.as_view({"post": "finish"})
 
 accept_delivery = OrdenesAPIView.as_view({"post": "accept_delivery"})
 reject_delivery = OrdenesAPIView.as_view({"post": "reject_delivery"})
+rejected_deliveries = OrdenesAPIView.as_view({"get": "rejected_deliveries"})
 
 urlpatterns = [
     path("<str:role>/<int:delivery>/", list),
@@ -22,4 +23,5 @@ urlpatterns = [
 
     path("acceptdelivery/", accept_delivery),
     path("rejectdelivery/", reject_delivery),
+    path("rejecteddeliveries/", rejected_deliveries),
 ]

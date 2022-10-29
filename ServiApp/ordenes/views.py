@@ -111,3 +111,9 @@ class OrdenesAPIView(viewsets.GenericViewSet):
             {"DomiciliosRechazados": firestore.ArrayUnion([request.data["id"]])}
         )
         return Response({"msg": f"Domicilio rechazado"})
+
+    def rejected_deliveries(self, request):
+        uid = self.request.query_params.get("uid")
+        domiciliary = db.collection("Usuario").document(uid).get().to_dict()
+        return Response(domiciliary["DomiciliosRechazados"])
+
