@@ -140,6 +140,7 @@ class CartAPIView(viewsets.GenericViewSet):
                 "Total": request.data["Total"],
                 "Domicilio": user_fs["DomicilioCarro"],
                 "Estado": -1,
+                "IdRestaurante": user_fs["RestauranteCarro"]
             }
         )
         db.collection("Usuario").document(uid).update(

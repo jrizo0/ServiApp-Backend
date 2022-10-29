@@ -10,8 +10,8 @@ retrieve = OrdenesAPIView.as_view({"get": "retrieve"})
 rate = OrdenesAPIView.as_view({"post": "rate"})
 finish = OrdenesAPIView.as_view({"post": "finish"})
 
-accept_orders = OrdenesAPIView.as_view({"post": "accept_orders"})
-reject_orders = OrdenesAPIView.as_view({"post": "reject_orders"})
+accept_order = OrdenesAPIView.as_view({"post": "accept_order"})
+reject_order = OrdenesAPIView.as_view({"post": "reject_order"})
 accepted_orders = OrdenesAPIView.as_view({"get": "accepted_orders"})
 rejected_orders = OrdenesAPIView.as_view({"get": "rejected_orders"})
 
@@ -22,8 +22,8 @@ urlpatterns = [
     path("rate/", rate),
     path("finish/", finish),
 
-    path("accept/", accept_orders),
-    path("reject/", reject_orders),
+    path("accept/", accept_order),
+    path("reject/", reject_order),
     path("accepted/", accepted_orders),
     path("rejected/", rejected_orders),
 ]
