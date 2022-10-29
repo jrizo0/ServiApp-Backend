@@ -43,7 +43,7 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         id = self.request.query_params.get("id")
         ord_fs = db.collection("Orden").document(id).get()
         if not ord_fs.exists: 
-            return Response({})
+            return {}
         ord_inf = {"id": ord_fs.id} | ord_fs.to_dict()
         rest_inf = db.collection("Restaurante").document(ord_inf["Restaurante"]).get()
         if ord_fs.exists: 
@@ -60,39 +60,39 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         res = []
         if delivery != 2:
             orders_fs = orders_fs.where("Domicilio", "==", delivery == 1)
-        if role != "Domiciliario":
-            orders_fs = orders_fs.where(role, "==", uid)
-            orders_fs = orders_fs.get()
-            for order in orders_fs:
-                order_inf = order.to_dict()
-                rest = (
-                    db.collection("Restaurante")
-                    .document(order_inf["Restaurante"])
-                    .get()
-                )
-                if not rest.exists:
-                    continue
-                rest = rest.to_dict()
-                order = {"id": order.id} | order_inf | {"Restaurante": rest}
-                res.append(order)
-        else:
-            domiciliary = db.collection("Usuario").document(uid).get().to_dict()
-            accepted_orders = domiciliary["DomiciliosAceptados"]
-            for id_order in accepted_orders:
-                order_inf = db.collection("Orden").document(id_order).get()
-                if not order_inf.exists:
-                    continue
-                order_inf = order_inf.to_dict()
-                rest = (
-                    db.collection("Restaurante")
-                    .document(order_inf["Restaurante"])
-                    .get()
-                )
-                if not rest.exists:
-                    continue
-                rest = rest.to_dict()
-                order = {"id": id_order} | order_inf | {"Restaurante": rest}
-                res.append(order)
+        # if role != "Domiciliario":
+        orders_fs = orders_fs.where(role, "==", uid)
+        orders_fs = orders_fs.get()
+        for order in orders_fs:
+            order_inf = order.to_dict()
+            rest = (
+                db.collection("Restaurante")
+                .document(order_inf["Restaurante"])
+                .get()
+            )
+            if not rest.exists:
+                continue
+            rest = rest.to_dict()
+            order = {"id": order.id} | order_inf | {"Restaurante": rest}
+            res.append(order)
+        # else:
+        #     domiciliary = db.collection("Usuario").document(uid).get().to_dict()
+        #     accepted_orders = domiciliary["DomiciliosAceptados"]
+        #     for id_order in accepted_orders:
+        #         order_inf = db.collection("Orden").document(id_order).get()
+        #         if not order_inf.exists:
+        #             continue
+        #         order_inf = order_inf.to_dict()
+        #         rest = (
+        #             db.collection("Restaurante")
+        #             .document(order_inf["Restaurante"])
+        #             .get()
+        #         )
+        #         if not rest.exists:
+        #             continue
+        #         rest = rest.to_dict()
+        #         order = {"id": id_order} | order_inf | {"Restaurante": rest}
+        #         res.append(order)
 
         res.sort(key=lambda r: r["Fecha"])
         res = res[::-1]

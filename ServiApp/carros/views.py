@@ -132,7 +132,13 @@ class CartAPIView(viewsets.GenericViewSet):
         fs_doc = db.collection("Orden").add(new_order)
         new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)
         orders_ref = dbrt.reference(f'Ordenes/{new_order["id"]}')
-        rest = db.collection("Restaurante").document(user_fs["RestauranteCarro"]).get().to_dict()
+        rest = (
+            db.collection("Restaurante")
+            .document(user_fs["RestauranteCarro"])
+            .get()
+            .to_dict()
+        )
+        dt_to_int = int(round(dt.timestamp()))
         orders_ref.set(
             {
                 "NombreCliente": user_info["nombrecliente"],
@@ -140,7 +146,8 @@ class CartAPIView(viewsets.GenericViewSet):
                 "Total": request.data["Total"],
                 "Domicilio": user_fs["DomicilioCarro"],
                 "Estado": -1,
-                "IdRestaurante": user_fs["RestauranteCarro"]
+                "IdRestaurante": user_fs["RestauranteCarro"],
+                "Fecha": dt_to_int
             }
         )
         db.collection("Usuario").document(uid).update(
