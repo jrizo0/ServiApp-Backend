@@ -137,7 +137,7 @@ class CartAPIView(viewsets.GenericViewSet):
                 "NombreCliente": user_info["nombrecliente"],
                 "RestauranteImagen": rest["Imagen"],
                 "Total": request.data["Total"],
-                "Domicilio": user_fs["DomicilioCarro"] == "1",
+                "Domicilio": user_fs["DomicilioCarro"],
                 "Estado": -1,
             }
         )
