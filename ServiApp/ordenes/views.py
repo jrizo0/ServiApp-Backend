@@ -42,7 +42,13 @@ class OrdenesAPIView(viewsets.GenericViewSet):
     def get_queryset(self):
         id = self.request.query_params.get("id")
         ord_fs = db.collection("Orden").document(id).get()
-        return {"id": ord_fs.id} | ord_fs.to_dict()
+        if not ord_fs.exists: 
+            return Response({})
+        ord_inf = ord_fs.to_dict()
+        rest_inf = db.collection("Restaurante").document(ord_inf["Restaurante"]).get()
+        if ord_fs.exists: 
+            ord_inf["Restaurante"] = {"id": ord_inf["Restaurante"]} | rest_inf.to_dict()
+        return ord_inf
 
     def retrieve(self, request):
         return Response(self.get_queryset())
