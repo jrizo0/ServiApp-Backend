@@ -113,6 +113,23 @@ class ProductosAPIView(viewsets.GenericViewSet):
         rests = self.aux_fill_missing_fields(rests, fs_query_cats)
         return Response(rests)
 
+def list_rest(id_rest):
+    if "20-" in id_rest:
+        id_rest = "20"
+    tarifas_api = requests.get(f"{API_Tarifas}/tarifav/{id_rest}/").json()
+    fs_query_prods = db.collection("Producto").get()
+    rests = []
+    for prod in fs_query_prods:
+        if not prod.id in tarifas_api:
+            continue
+        rests.append(
+            {"id": prod.id}
+            | prod.to_dict()
+            | {"Precio": tarifas_api[prod.id]["precio"]}
+        )
+    fs_query_cats = db.collection("CategoriaProducto").get()
+    rests = ProductosAPIView.aux_fill_missing_fields(ProductosAPIView, rests, fs_query_cats)
+    return rests
 
 def list_rest_delivery(id_rest):
     if "20-" in id_rest:

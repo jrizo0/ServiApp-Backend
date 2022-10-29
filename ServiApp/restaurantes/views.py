@@ -14,7 +14,7 @@ from django.conf import settings
 
 from django.core.exceptions import PermissionDenied
 
-from productos.views import list_rest_delivery
+from productos.views import list_rest_delivery, list_rest
 
 
 API_Restaurantes = settings.SA_API_URL + "/restaurantes"
@@ -61,6 +61,12 @@ class RestauranteAPIView(viewsets.GenericViewSet):
             rest_id = rests[i]["id"]
             aforo = requests.get(f"{API_Aforo}/get/{rest_id}/").json()
             rests[i] = rests[i] | aforo
+            rests[i]["Productos"] = list_rest(rest_id)
+            if len(rests[i]["Productos"]) == 0:
+                continue
+            aforo = requests.get(f"{API_Aforo}/get/{rest_id}/").json()
+            rests[i] = rests[i] | aforo
+        rests = [rest for rest in rests if len(rest["Productos"]) > 0]
         return rests
 
     # @method_decorator(vary_on_cookie)
