@@ -127,6 +127,7 @@ class CartAPIView(viewsets.GenericViewSet):
             "Direccion": request.data["Direccion"],
             "Finalizado": False,
             "Resena": {},
+            # "Aceptado": False # Empieza sin este campo
         }
         fs_doc = db.collection("Orden").add(new_order)
         new_order = {"id": fs_doc[1].id} | new_order  # fs_doc: tuple (time, doc)

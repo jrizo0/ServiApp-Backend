@@ -24,10 +24,11 @@ Ordenes:
 - calificacion
 - direccion en fs
 - info_productos en orden
- arreglar view: list para rest y para domi
- arreglar list por rest solo de ese rest
+- arreglar view: list para rest y para domi
+- arreglar list por rest solo de ese rest
 
 Domiciliario:
 - ver productos de orden
  en front rejectOrder pantalla reviewrest
 
+get accepted y rejecte no sirve por el cambio de rol en las pantallas

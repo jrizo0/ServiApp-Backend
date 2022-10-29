@@ -59,7 +59,11 @@ class OrdenesAPIView(viewsets.GenericViewSet):
             orders_fs = orders_fs.get()
             for order in orders_fs:
                 order_inf = order.to_dict()
-                rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
+                rest = (
+                    db.collection("Restaurante")
+                    .document(order_inf["Restaurante"])
+                    .get()
+                )
                 if not rest.exists:
                     continue
                 rest = rest.to_dict()
@@ -73,7 +77,11 @@ class OrdenesAPIView(viewsets.GenericViewSet):
                 if not order_inf.exists:
                     continue
                 order_inf = order_inf.to_dict()
-                rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
+                rest = (
+                    db.collection("Restaurante")
+                    .document(order_inf["Restaurante"])
+                    .get()
+                )
                 if not rest.exists:
                     continue
                 rest = rest.to_dict()
@@ -100,29 +108,66 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         order_rt.delete()
         return Response({"msg": f"Orden finalizada"})
 
-    def accept_delivery(self, request):
+    def accept_order(self, request):
         uid = self.request.query_params.get("uid")
         user = db.collection("Usuario").document(uid)
-        if not "DomiciliosAceptados" in user.get().to_dict():
-            user.update({"DomiciliosAceptados": []})
-        user.update({"DomiciliosAceptados": firestore.ArrayUnion([request.data["id"]])})
-        db.collection("Orden").document(request.data["id"]).update(
-            {"Domiciliario": uid}
-        )
-        return Response({"msg": f"Domicilio aceptado"})
+        user_inf = user.get().to_dict()
+        if user_inf["Rol"] == "Domiciliario":
+            field_name = "DomiciliosAceptados"
+            db.collection("Orden").document(request.data["id"]).update(
+                {"Domiciliario": uid}
+            )
+        else:  # Restaurante
+            field_name = "OrdenesAceptadas"
+            db.collection("Orden").document(request.data["id"]).update(
+                {"Aceptado": True}
+            )
+        if not field_name in user_inf:
+            user.update({field_name: []})
+        user.update({field_name: firestore.ArrayUnion([request.data["id"]])})
+        return Response({"msg": f"Orden aceptada"})
 
-    def reject_delivery(self, request):
+    def reject_order(self, request):
         uid = self.request.query_params.get("uid")
         user = db.collection("Usuario").document(uid)
-        if not "DomiciliosRechazados" in user.get().to_dict():
-            user.update({"DomiciliosRechazados": []})
-        user.update(
-            {"DomiciliosRechazados": firestore.ArrayUnion([request.data["id"]])}
-        )
-        return Response({"msg": f"Domicilio rechazado"})
+        user_inf = user.get().to_dict()
+        if user_inf["Rol"] == "Domiciliario":
+            field_name = "DomiciliosRechazados"
+            db.collection("Orden").document(request.data["id"]).update(
+                {"Domiciliario": uid}
+            )
+        else:  # Restaurante
+            field_name = "OrdenesRechazadas"
+            db.collection("Orden").document(request.data["id"]).update(
+                {"Aceptado": False}
+            )
+        if not field_name in user_inf:
+            user.update({field_name: []})
+        user.update({field_name: firestore.ArrayUnion([request.data["id"]])})
+        return Response({"msg": f"Orden rechazada"})
 
-    def rejected_deliveries(self, request):
+    def accepted_orders(self, request):
         uid = self.request.query_params.get("uid")
-        domiciliary = db.collection("Usuario").document(uid).get().to_dict()
-        return Response(domiciliary["DomiciliosRechazados"])
+        user = db.collection("Usuario").document(uid)
+        user_inf = user.get().to_dict()
+        if user_inf["Rol"] == "Domiciliario":
+            field_name = "DomiciliosAceptados"
+        else:  # Restaurante
+            field_name = "OrdenesAceptadas"
+        if not field_name in user_inf:
+            return Response([])
+        user = db.collection("Usuario").document(uid).get().to_dict()
+        return Response(user[field_name])
 
+    def rejected_orders(self, request):
+        uid = self.request.query_params.get("uid")
+        user = db.collection("Usuario").document(uid)
+        user_inf = user.get().to_dict()
+        if user_inf["Rol"] == "Domiciliario":
+            field_name = "DomiciliosRechazados"
+        else:  # Restaurante
+            field_name = "OrdenesRechazadas"
+        if not field_name in user_inf:
+            return Response([])
+        user = db.collection("Usuario").document(uid).get().to_dict()
+        return Response(user[field_name])
