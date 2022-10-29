@@ -44,7 +44,7 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         ord_fs = db.collection("Orden").document(id).get()
         if not ord_fs.exists: 
             return Response({})
-        ord_inf = ord_fs.to_dict()
+        ord_inf = {"id": ord_fs.id} | ord_fs.to_dict()
         rest_inf = db.collection("Restaurante").document(ord_inf["Restaurante"]).get()
         if ord_fs.exists: 
             ord_inf["Restaurante"] = {"id": ord_inf["Restaurante"]} | rest_inf.to_dict()
