@@ -132,8 +132,6 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "DomicilioCarro": "",  # Por defecto vacio
             "Telefono": usu_form["Telefono"],
             "Carro": {},
-            "DomiciliosAceptados": [],
-            "DomiciliosRechazados": [],
         }
         db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
         return Response(info_api | {"Telefono": info_fs["Telefono"]})
@@ -169,6 +167,8 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "DeviceToken": usu_form["DeviceToken"],
             "Rol": "Restaurante",
             "Telefono": usu_form["Telefono"],
+            "OrdenesAceptadas": [],
+            "OrdenesRechazados": [],
         }
         db.collection("Usuario").document(uid).set(info_fs)
         return Response(info_fs)
@@ -217,71 +217,3 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         return Response(
             {"status": 200, "msg": f"Sucessfully updated push token to user: {uid}"}
         )
-
-
-class DomiciliarioAPIView(viewsets.GenericViewSet):
-    def create(self, request):
-        usu_form = request.data
-        info_api = {
-            "nombrecliente": usu_form["nombrecliente"],
-            "direccion1": usu_form["direccion1"],
-            "e_mail": usu_form["e_mail"],
-            "tipo": 3,  # Por defecto usuario tipo estudiante
-        }
-        # NOTE: no se agrega en bd de servicios de alimentacion.
-        # info_api = requests.post(f"{API_Clientes}/", json=info_api)
-        # if not info_api.status_code in [201, 200]:
-        #     raise ValidationError()
-        # info_api = info_api.json()
-
-        auth.create_user(
-            uid=str(info_api["codcliente"]),
-            email=info_api["e_mail"],
-            password=usu_form["password"],
-        )
-
-        info_fs = {
-            "DeviceToken": usu_form["DeviceToken"],
-            "Rol": "Domiciliario",  # Por defecto rol usuario
-            "Telefono": usu_form["Telefono"],
-            "DomiciliosAceptados": [],
-            "DomiciliosRechazados": [],
-        }
-        db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
-
-        return Response(info_api | {"Telefono": info_fs["Telefono"]})
-
-class RestauranteAPIView(viewsets.GenericViewSet):
-    # TODO: create
-    def create(self, request):
-        # usu_form = request.data
-        # info_api = {
-        #     "nombrecliente": usu_form["nombrecliente"],
-        #     "direccion1": usu_form["direccion1"],
-        #     "e_mail": usu_form["e_mail"],
-        #     "tipo": 3,  # Por defecto usuario tipo estudiante
-        # }
-        # # NOTE: no se agrega en bd de servicios de alimentacion.
-        # # info_api = requests.post(f"{API_Clientes}/", json=info_api)
-        # # if not info_api.status_code in [201, 200]:
-        # #     raise ValidationError()
-        # # info_api = info_api.json()
-        #
-        # auth.create_user(
-        #     uid=str(info_api["codcliente"]),
-        #     email=info_api["e_mail"],
-        #     password=usu_form["password"],
-        # )
-        #
-        # info_fs = {
-        #     "DeviceToken": usu_form["DeviceToken"],
-        #     "Rol": "Restaurante",  # Por defecto rol usuario
-        #     "Telefono": usu_form["Telefono"],
-        #     "DomiciliosAceptados": [],
-        #     "DomiciliosRechazados": [],
-        # }
-        # db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
-        #
-        # return Response(info_api | {"Telefono": info_fs["Telefono"]})
-
-        return Response("to-do")
