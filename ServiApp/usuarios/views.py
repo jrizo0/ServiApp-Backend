@@ -145,7 +145,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             password=usu_form["password"],
         ).uid
         info_fs = {
-            "Nombre": usu_form["nombrecliente"],
+            "nombrecliente": usu_form["nombrecliente"],
             "e_mail": usu_form["e_mail"],
             "DeviceToken": usu_form["DeviceToken"],
             "Rol": "Domiciliario",
@@ -164,7 +164,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         ).uid
         info_fs = {
             "Restaurante": usu_form["Restaurante"],
-            "Nombre": usu_form["nombrecliente"],
+            "nombrecliente": usu_form["nombrecliente"],
             "e_mail": usu_form["e_mail"],
             "DeviceToken": usu_form["DeviceToken"],
             "Rol": "Restaurante",
