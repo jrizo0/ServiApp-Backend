@@ -147,7 +147,7 @@ class CartAPIView(viewsets.GenericViewSet):
                 "Domicilio": user_fs["DomicilioCarro"],
                 "Estado": -1,
                 "IdRestaurante": user_fs["RestauranteCarro"],
-                "Fecha": dt_to_int
+                "timestamp": dt_to_int
             }
         )
         db.collection("Usuario").document(uid).update(
