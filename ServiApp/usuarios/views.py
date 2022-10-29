@@ -40,9 +40,12 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             f"{API_Clientes}/{uid}/"
         )  # codcliente, nombre, direccion, email
         usu_fs = db.collection("Usuario").document(uid).get()  # telefono
-        if usu_api.status_code != 200 or not usu_fs.exists:
-            return []
-        return usu_api.json() | usu_fs.to_dict()
+        res = {}
+        if usu_api.status_code == 200:
+            res = res | usu_api.json()
+        if usu_fs.exists:
+            res = res | usu_fs.to_dict() 
+        return res
 
     # @method_decorator(vary_on_headers("Authorization"))
     # @method_decorator(vary_on_cookie)
@@ -137,15 +140,13 @@ class UsuarioAPIView(viewsets.GenericViewSet):
 
     def create_domiciliary(self, request):
         usu_form = request.data
-        info_api = {
-            "nombrecliente": usu_form["nombrecliente"],
-            "e_mail": usu_form["e_mail"],
-        }
         uid = auth.create_user(
-            email=info_api["e_mail"],
+            email=usu_form["e_mail"],
             password=usu_form["password"],
         ).uid
         info_fs = {
+            "Nombre": usu_form["nombrecliente"],
+            "e_mail": usu_form["e_mail"],
             "DeviceToken": usu_form["DeviceToken"],
             "Rol": "Domiciliario",
             "Telefono": usu_form["Telefono"],
@@ -153,7 +154,24 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "DomiciliosRechazados": [],
         }
         db.collection("Usuario").document(uid).set(info_fs)
-        return Response(info_api | {"Telefono": info_fs["Telefono"]})
+        return Response(info_fs)
+
+    def create_restaurant(self, request):
+        usu_form = request.data
+        uid = auth.create_user(
+            email=usu_form["e_mail"],
+            password=usu_form["password"],
+        ).uid
+        info_fs = {
+            "Restaurante": usu_form["Restaurante"],
+            "Nombre": usu_form["nombrecliente"],
+            "e_mail": usu_form["e_mail"],
+            "DeviceToken": usu_form["DeviceToken"],
+            "Rol": "Restaurante",
+            "Telefono": usu_form["Telefono"],
+        }
+        db.collection("Usuario").document(uid).set(info_fs)
+        return Response(info_fs)
 
     def update(self, request):
         uid = self.request.query_params.get("uid")

@@ -12,6 +12,7 @@ usu_del_card = UsuarioAPIView.as_view({"delete": "delete_card"})
 
 usu_create = UsuarioAPIView.as_view({"post": "create"})
 usu_create_domiciliary = UsuarioAPIView.as_view({"post": "create_domiciliary"})
+usu_create_restaurant = UsuarioAPIView.as_view({"post": "create_restaurant"})
 usu_update = UsuarioAPIView.as_view({"put": "update"})
 usu_change_pass = UsuarioAPIView.as_view({"put": "change_pass"})
 usu_update_device_token = UsuarioAPIView.as_view({"put": "update_device_token"})
@@ -25,6 +26,7 @@ urlpatterns = [
 
     path("create/", usu_create),
     path("createdomiciliary/", usu_create_domiciliary),
+    path("createrestaurant/", usu_create_restaurant),
     path("update/", usu_update),
     path("changepass/", usu_change_pass),
     path("dt/", usu_update_device_token),
