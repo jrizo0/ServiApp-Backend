@@ -104,23 +104,18 @@ class CartAPIView(viewsets.GenericViewSet):
         # request.data = Carro:map, Domicilio:boolean, Estado, Fecha, Restaurante, Tarjeta
         uid = self.request.query_params.get("uid")
         user_info = UsuarioAPIView.get_queryset(UsuarioAPIView, uid)
-        user_fs = db.collection("Usuario").document(uid).get()
-        user_fs = user_fs.to_dict()
         dt = datetime.now()
-        cart = user_fs["Carro"]
+        cart = user_info["Carro"]
         for id_p in cart:
             prod = db.collection("Producto").document(id_p).get().to_dict()
             cart[id_p] = cart[id_p] | prod
         new_order = {
             "Usuario": uid,
-            "UsuarioInfo": {
-                "nombrecliente": user_info["nombrecliente"],
-                "e_mail": user_info["e_mail"],
-            },
+            "UsuarioInfo": user_info,
             "Carro": cart,
             "Tarjeta": request.data["Tarjeta"],
-            "Restaurante": user_fs["RestauranteCarro"],
-            "Domicilio": user_fs["DomicilioCarro"],
+            "Restaurante": user_info["RestauranteCarro"],
+            "Domicilio": user_info["DomicilioCarro"],
             "Domiciliario": "",
             "Fecha": dt,
             "Total": request.data["Total"],
@@ -134,7 +129,7 @@ class CartAPIView(viewsets.GenericViewSet):
         orders_ref = dbrt.reference(f'Ordenes/{new_order["id"]}')
         rest = (
             db.collection("Restaurante")
-            .document(user_fs["RestauranteCarro"])
+            .document(user_info["RestauranteCarro"])
             .get()
             .to_dict()
         )
@@ -144,9 +139,9 @@ class CartAPIView(viewsets.GenericViewSet):
                 "NombreCliente": user_info["nombrecliente"],
                 "RestauranteImagen": rest["Imagen"],
                 "Total": request.data["Total"],
-                "Domicilio": user_fs["DomicilioCarro"],
+                "Domicilio": user_info["DomicilioCarro"],
                 "Estado": -1,
-                "IdRestaurante": user_fs["RestauranteCarro"],
+                "IdRestaurante": user_info["RestauranteCarro"],
                 "timestamp": dt_to_int
             }
         )
