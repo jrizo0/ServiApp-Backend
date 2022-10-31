@@ -97,3 +97,9 @@ class RestauranteAPIView(viewsets.GenericViewSet):
     @method_decorator(cache_page(60 * 60))
     def list_delivery(self, request):
         return Response(self.get_queryset_delivery(request))
+
+    def retrieve(self, request):
+        id = self.request.query_params.get("id")
+        rest_fs = db.collection("Restaurante").document(id)
+        return Response(rest_fs)
+
