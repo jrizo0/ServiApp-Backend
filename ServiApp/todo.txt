@@ -32,3 +32,5 @@ Domiciliario:
  en front rejectOrder pantalla reviewrest
 
 get accepted y rejecte no sirve por el cambio de rol en las pantallas
+
+agregar telefono a restaurante fs

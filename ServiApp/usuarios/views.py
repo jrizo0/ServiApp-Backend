@@ -175,7 +175,8 @@ class UsuarioAPIView(viewsets.GenericViewSet):
 
     def update(self, request):
         uid = self.request.query_params.get("uid")
-        if self.get_queryset(uid) == []:  # Usuario no existe en fb
+        user = self.get_queryset(uid)
+        if user == {}:  # Usuario no existe en fb
             raise ValidationError()
         # {(api) nombrecliente, direccion1, e_mail, (fs) Telefono}
         usu_form = request.data
@@ -187,13 +188,14 @@ class UsuarioAPIView(viewsets.GenericViewSet):
             "tipo": 3,  # Por defecto usuario tipo estudiante
         }
         info_api = requests.put(f"{API_Clientes}/{uid}/", json=info_api)
-        if info_api.status_code in [201, 200]:  # Usuario no existe en api
+        if not info_api.status_code in [201, 200]:  # Usuario no existe en api
             raise ValidationError()
         info_api = info_api.json()
-        auth.update_user(
-            uid=str(info_api["codcliente"]),
-            email=info_api["e_mail"],
-        )
+        if user["e_mail"] != info_api["e_mail"]:
+            auth.update_user(
+                uid=str(info_api["codcliente"]),
+                email=info_api["e_mail"],
+            )
         info_fs = {"Telefono": usu_form["Telefono"]}
         db.collection("Usuario").document(uid).update(
             {"Telefono": usu_form["Telefono"]}
