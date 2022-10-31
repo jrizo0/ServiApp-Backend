@@ -100,6 +100,6 @@ class RestauranteAPIView(viewsets.GenericViewSet):
 
     def retrieve(self, request):
         id = self.request.query_params.get("id")
-        rest_fs = db.collection("Restaurante").document(id)
+        rest_fs = db.collection("Restaurante").document(id).get().to_dict()
         return Response(rest_fs)
 
