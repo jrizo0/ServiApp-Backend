@@ -111,7 +111,14 @@ class CartAPIView(viewsets.GenericViewSet):
             cart[id_p] = cart[id_p] | prod
         new_order = {
             "Usuario": uid,
-            "UsuarioInfo": user_info,
+            "UsuarioInfo": {
+                "DeviceToken": user_info["DeviceToken"],
+                "Telefono": user_info["Telefono"],
+                "codcliente": user_info["codcliente"],
+                "direccion1": user_info["direccion1"],
+                "e_mail": user_info["e_mail"],
+                "nombrecliente": user_info["nombrecliente"],
+            },
             "Carro": cart,
             "Tarjeta": request.data["Tarjeta"],
             "Restaurante": user_info["RestauranteCarro"],
@@ -142,7 +149,7 @@ class CartAPIView(viewsets.GenericViewSet):
                 "Domicilio": user_info["DomicilioCarro"],
                 "Estado": -1,
                 "IdRestaurante": user_info["RestauranteCarro"],
-                "timestamp": dt_to_int
+                "timestamp": dt_to_int,
             }
         )
         db.collection("Usuario").document(uid).update(

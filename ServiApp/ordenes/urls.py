@@ -15,6 +15,8 @@ reject_order = OrdenesAPIView.as_view({"post": "reject_order"})
 accepted_orders = OrdenesAPIView.as_view({"get": "accepted_orders"})
 rejected_orders = OrdenesAPIView.as_view({"get": "rejected_orders"})
 
+reorder = OrdenesAPIView.as_view({"post": "reorder"})
+
 urlpatterns = [
     path("<str:role>/<int:delivery>/", list),
     path("get/", retrieve),
@@ -26,4 +28,6 @@ urlpatterns = [
     path("reject/", reject_order),
     path("accepted/", accepted_orders),
     path("rejected/", rejected_orders),
+
+    path("reorder/", reorder),
 ]

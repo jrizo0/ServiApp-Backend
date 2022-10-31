@@ -1,23 +1,18 @@
-from firebase_admin import firestore
-
-from rest_framework import viewsets
-
+from datetime import datetime
 import requests
-
-from rest_framework.response import Response
-from rest_framework.permissions import SAFE_METHODS, BasePermission
-
+from carros.views import CartAPIView
+from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie, vary_on_headers
-
-from ServiApp.firebase import db, dbrt
-from django.conf import settings
-
-from django.core.exceptions import PermissionDenied
-
+from firebase_admin import firestore
+from rest_framework import viewsets
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework.response import Response
 from usuarios.views import UsuarioAPIView
 
+from ServiApp.firebase import db, dbrt
 
 API_Productos = settings.SA_API_URL + "/productos"
 API_Tarifas = settings.SA_API_URL + "/tarifas"
@@ -42,11 +37,11 @@ class OrdenesAPIView(viewsets.GenericViewSet):
     def get_queryset(self):
         id = self.request.query_params.get("id")
         ord_fs = db.collection("Orden").document(id).get()
-        if not ord_fs.exists: 
+        if not ord_fs.exists:
             return {}
         ord_inf = {"id": ord_fs.id} | ord_fs.to_dict()
         rest_inf = db.collection("Restaurante").document(ord_inf["Restaurante"]).get()
-        if ord_fs.exists: 
+        if ord_fs.exists:
             ord_inf["Restaurante"] = {"id": ord_inf["Restaurante"]} | rest_inf.to_dict()
         return ord_inf
 
@@ -60,39 +55,16 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         res = []
         if delivery != 2:
             orders_fs = orders_fs.where("Domicilio", "==", delivery == 1)
-        # if role != "Domiciliario":
         orders_fs = orders_fs.where(role, "==", uid)
         orders_fs = orders_fs.get()
         for order in orders_fs:
             order_inf = order.to_dict()
-            rest = (
-                db.collection("Restaurante")
-                .document(order_inf["Restaurante"])
-                .get()
-            )
+            rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
             if not rest.exists:
                 continue
             rest = rest.to_dict()
             order = {"id": order.id} | order_inf | {"Restaurante": rest}
             res.append(order)
-        # else:
-        #     domiciliary = db.collection("Usuario").document(uid).get().to_dict()
-        #     accepted_orders = domiciliary["DomiciliosAceptados"]
-        #     for id_order in accepted_orders:
-        #         order_inf = db.collection("Orden").document(id_order).get()
-        #         if not order_inf.exists:
-        #             continue
-        #         order_inf = order_inf.to_dict()
-        #         rest = (
-        #             db.collection("Restaurante")
-        #             .document(order_inf["Restaurante"])
-        #             .get()
-        #         )
-        #         if not rest.exists:
-        #             continue
-        #         rest = rest.to_dict()
-        #         order = {"id": id_order} | order_inf | {"Restaurante": rest}
-        #         res.append(order)
 
         res.sort(key=lambda r: r["Fecha"])
         res = res[::-1]
@@ -177,3 +149,46 @@ class OrdenesAPIView(viewsets.GenericViewSet):
             return Response([])
         user = db.collection("Usuario").document(uid).get().to_dict()
         return Response(user[field_name])
+
+    def reorder(self, request):
+        # uid = self.request.query_params.get("uid")
+        # user = db.collection("Usuario").document(uid).get().to_dict()
+        order_id = request.data["id"]
+        order = db.collection("Orden").document(order_id).get()
+        if not order.exists:
+            return Response("No existe la orden")
+        order = order.to_dict()
+        # duplicar orden con otro id
+        fs_doc = db.collection("Orden").add(order)
+        order = {"id": fs_doc[1].id} | order  # fs_doc: tuple (time, doc)
+
+        # campos de orden nueva
+        dt = datetime.now()
+        order ["Fecha"]: dt
+        order["Resena"] = {}
+        order["Direccion"] = request.data["Direccion"]
+        order["Tarjeta"] = request.data["Tarjeta"]
+        if "Aceptado" in order: 
+            del order["Aceptado"]
+
+        orders_ref = dbrt.reference(f'Ordenes/{order["id"]}')
+        rest = (
+            db.collection("Restaurante")
+            .document(order["Restaurante"])
+            .get()
+            .to_dict()
+        )
+        dt_to_int = int(round(dt.timestamp()))
+        orders_ref.set(
+            {
+                "NombreCliente": order["UsuarioInfo"]["nombrecliente"],
+                "RestauranteImagen": rest["Imagen"],
+                "Total": order["Total"],
+                "Domicilio": order["Domicilio"],
+                "Estado": -1,
+                "IdRestaurante": order["Restaurante"],
+                "timestamp": dt_to_int,
+            }
+        )
+        # TODO: guardar factura en serviciosalimentacion-api.
+        return Response(order)
