@@ -33,5 +33,5 @@ Domiciliario:
 
 get accepted y rejecte no sirve por el cambio de rol en las pantallas
 
-agregar telefono a restaurante fs
-cambiar direccion arreglar
+- agregar telefono a restaurante fs
+- cambiar direccion arreglar

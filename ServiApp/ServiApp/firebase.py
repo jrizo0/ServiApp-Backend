@@ -42,7 +42,7 @@
 
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
-from firebase_admin import db as dbrt
+from firebase_admin import db as dbrt, auth
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
