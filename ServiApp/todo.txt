@@ -35,3 +35,7 @@ Domiciliario:
 
 - agregar telefono a restaurante fs
 - cambiar direccion arreglar
+
+FRONT
+  al abrir orden finalizada por delivery f
+  calificaciones backbutton faltante
