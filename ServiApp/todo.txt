@@ -1,4 +1,4 @@
-Arreglar en front logout queda gurdado el user anterior
+- Arreglar en front logout queda gurdado el user anterior
 - get info producto
 - get carrito(info producto, restaurnate, cantidadprod)
 - post eliminar un producto carrito
@@ -29,13 +29,28 @@ Ordenes:
 
 Domiciliario:
 - ver productos de orden
- en front rejectOrder pantalla reviewrest
+  en front rejectOrder pantalla reviewrest
 
-/ get accepted y rejecte no sirve por el cambio de rol en las pantallas
+- get accepted y rejecte no sirve por el cambio de rol en las pantallas
 
 - agregar telefono a restaurante fs
 - cambiar direccion arreglar
 
 FRONT
   al abrir orden finalizada por delivery f
-  calificaciones backbutton faltante
+  calificaciones backbutton falta
+
+ADMIN
+  Usuarios:
+    create usuario Domiciliario
+    create usuario Restaurante
+  Restaurantes:
+    create
+    read
+    update
+    delete
+  Productos:
+    create
+    read
+    update
+    delete
