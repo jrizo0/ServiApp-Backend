@@ -31,7 +31,11 @@ Domiciliario:
 - ver productos de orden
  en front rejectOrder pantalla reviewrest
 
-get accepted y rejecte no sirve por el cambio de rol en las pantallas
+/ get accepted y rejecte no sirve por el cambio de rol en las pantallas
 
-agregar telefono a restaurante fs
-cambiar direccion arreglar
+- agregar telefono a restaurante fs
+- cambiar direccion arreglar
+
+FRONT
+  al abrir orden finalizada por delivery f
+  calificaciones backbutton faltante
