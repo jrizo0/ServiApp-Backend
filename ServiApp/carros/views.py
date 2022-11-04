@@ -54,7 +54,12 @@ class CartAPIView(viewsets.GenericViewSet):
             return Response({"msg": "Cantidad es 0"})
         user = db.collection("Usuario").document(uid).get().to_dict()
         if user["DomicilioCarro"] != "" and user["DomicilioCarro"] != delivery:
-            return Response({"msg": "No coincide modalidad de pedido"})
+            return Response(
+                data={
+                    "status": 302,
+                    "msg": "No coincide la modalidad del pedido actual",
+                },
+            )
 
         id_rest_query_api = id_rest
         if "20-" in id_rest_query_api:
@@ -64,8 +69,11 @@ class CartAPIView(viewsets.GenericViewSet):
         ]
         if user["RestauranteCarro"] != "" and id_rest != user["RestauranteCarro"]:
             return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={"msg": "Restaurante no coincide con el restaurante del carrito"},
+                status=status.HTTP_302_FOUND,
+                data={
+                    "status": 302,
+                    "msg": "Ya tienes un pedido en proceso con otro restaurante",
+                },
             )
         if user["RestauranteCarro"] == "":
             db.collection("Usuario").document(uid).update({"RestauranteCarro": id_rest})
