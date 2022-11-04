@@ -62,7 +62,7 @@ class OrdenesAPIView(viewsets.GenericViewSet):
             rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
             if not rest.exists:
                 continue
-            rest = rest.to_dict()
+            rest = {"id": rest.id} | rest.to_dict()
             order = {"id": order.id} | order_inf | {"Restaurante": rest}
             res.append(order)
 
