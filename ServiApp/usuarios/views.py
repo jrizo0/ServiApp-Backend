@@ -136,43 +136,6 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         db.collection("Usuario").document(str(info_api["codcliente"])).set(info_fs)
         return Response(info_api | {"Telefono": info_fs["Telefono"]})
 
-    def create_domiciliary(self, request):
-        usu_form = request.data
-        uid = auth.create_user(
-            email=usu_form["e_mail"],
-            password=usu_form["password"],
-        ).uid
-        info_fs = {
-            "nombrecliente": usu_form["nombrecliente"],
-            "e_mail": usu_form["e_mail"],
-            "DeviceToken": usu_form["DeviceToken"],
-            "Rol": "Domiciliario",
-            "Telefono": usu_form["Telefono"],
-            "DomiciliosAceptados": [],
-            "DomiciliosRechazados": [],
-        }
-        db.collection("Usuario").document(uid).set(info_fs)
-        return Response(info_fs)
-
-    def create_restaurant(self, request):
-        usu_form = request.data
-        uid = auth.create_user(
-            email=usu_form["e_mail"],
-            password=usu_form["password"],
-        ).uid
-        info_fs = {
-            "Restaurante": usu_form["Restaurante"],
-            "nombrecliente": usu_form["nombrecliente"],
-            "e_mail": usu_form["e_mail"],
-            "DeviceToken": usu_form["DeviceToken"],
-            "Rol": "Restaurante",
-            "Telefono": usu_form["Telefono"],
-            "OrdenesAceptadas": [],
-            "OrdenesRechazados": [],
-        }
-        db.collection("Usuario").document(uid).set(info_fs)
-        return Response(info_fs)
-
     def update(self, request):
         uid = self.request.query_params.get("uid")
         user = self.get_queryset(uid)

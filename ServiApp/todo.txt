@@ -44,6 +44,8 @@ ADMIN
   Usuarios:
     create usuario Domiciliario
     create usuario Restaurante
+    read usuario Domiciliario
+    read usuario Restaurante
   Restaurantes:
     create
     read
