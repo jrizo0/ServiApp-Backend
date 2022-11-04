@@ -44,7 +44,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         if usu_api.status_code == 200:
             res = res | usu_api.json()
         if usu_fs.exists:
-            res = res | usu_fs.to_dict() 
+            res = res | usu_fs.to_dict()
         return res
 
     # @method_decorator(vary_on_headers("Authorization"))
@@ -53,7 +53,6 @@ class UsuarioAPIView(viewsets.GenericViewSet):
     def retrieve(self, request):
         uid = self.request.query_params.get("uid")
         return Response(self.get_queryset(uid))
-
 
     def list_cards(self, request):
         uid = self.request.query_params.get("uid")
@@ -91,20 +90,14 @@ class UsuarioAPIView(viewsets.GenericViewSet):
     def delete_card(self, request):
         uid = self.request.query_params.get("uid")
         card_number = request.data["NumeroTarjeta"]
-        q_cards = (
-            db.collection("Tarjeta")
-            .where("Usuario", "==", uid)
-            .where("NumeroTarjeta", "==", card_number)
-            .get()
-        )
-        if not q_cards:
+        q_cards = db.collection("Tarjeta").document(card_number).get()
+        if not q_cards.exists:
             return Response(
                 exception=True,
                 status=status.HTTP_400_BAD_REQUEST,
                 data={"msg": "Tarjeta no encontrada"},
             )
-        for card in q_cards:
-            db.collection("Tarjeta").document(card.id).delete()
+        db.collection("Tarjeta").document(q_cards.id).delete()
         return Response({"msg": "Tarjeta eliminada"})
 
     def create(self, request):
