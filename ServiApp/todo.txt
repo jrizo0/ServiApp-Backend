@@ -39,6 +39,7 @@ Domiciliario:
 FRONT
   al abrir orden finalizada por delivery f
   calificaciones backbutton falta
+  calificaciones rest no sirve 
 
 ADMIN
   Usuarios:
