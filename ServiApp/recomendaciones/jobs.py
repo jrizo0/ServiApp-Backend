@@ -1,9 +1,6 @@
 # import requests
 # import json
-import numpy as np
 import pandas as pd
-import re as re
-import seaborn as sns
 from mlxtend.frequent_patterns import apriori, association_rules
 from ServiApp.firebase import db
 
@@ -18,19 +15,19 @@ def schedule_api():
 
 def get_recomendaciones():
     ventas = pd.read_csv(
-        "https://www.dropbox.com/s/m1sfxzidetqwl6o/ventasDtServiApp.csv?dl=1",
-        # "https://www.dropbox.com/s/evjiv3rw2he3epl/ventasDetalladasPorMeses.csv?dl=1",
+        # "https://www.dropbox.com/s/m1sfxzidetqwl6o/ventasDtServiApp.csv?dl=1",
+        "https://www.dropbox.com/s/2yyzpcrzwk5zhgo/ventasDtServiApp3.csv?dl=1",
         sep=";",
         encoding="utf-8",
         decimal=".",
         # dtype={"Transaccion": "str", "CodArticulo": np.int32, "Descripcion": "str", "UnidadesTotal": np.int32, "Precio": np.float64}
         low_memory=False,
-        nrows=10,
+        # nrows=10,
     )
     my_basket = ventas.pivot_table(
         index="Transaccion",
-        columns="Descripcion",
-        values="UnidadesTotal",
+        columns="CodArticulo",
+        values="UnidadesTotales",
         aggfunc="sum",
     ).fillna(0)
 
@@ -44,30 +41,26 @@ def get_recomendaciones():
     frequent_items = apriori(my_basket_sets, min_support=0.001, use_colnames=True)
     rules = association_rules(frequent_items, metric="lift", min_threshold=1)
     rules.sort_values("confidence", ascending=False, inplace=True)
-    print(rules)
-    reset_data(rules)
-
-    # rule2 = rules.loc[[2], ["antecedents", "consequents", "confidence"]].to_dict('index')[2]
-    # rule2b = {
-    #     'antecedents': list(rule2['antecedents']),
-    #     'consequents': list(rule2['consequents']),
-    #     'confidence': rule2['confidence']
-    # }
-    # print(rule2b)
+    # print(rules)
+    # print(len(rules))
+    reset_fs(rules)
 
 
-# TODO:
-def reset_data(data):
+def reset_fs(data):
     docs = db.collection("Recomendaciones").get()
     for doc in docs:
         key = doc.id
         db.collection("Recomendaciones").document(key).delete()
 
-    data = data.loc[["antecedents", "consequents", "confidence"]].to_dict('index')
+    data = data.loc[:, ["antecedents", "consequents", "confidence"]].to_dict("index")
     for row in data.values():
+        if row["confidence"] != 1:
+            continue
         new_doc = {
-            'antecedents': list(row['antecedents']),
-            'consequents': list(row['consequents']),
-            'confidence': row['confidence']
+            "antecedents": list(map(str, row["antecedents"])),
+            "consequents": list(map(str, row["consequents"])),
+            "confidence": row["confidence"],
         }
+        # print(type(new_doc))
         db.collection("Recomendaciones").add(new_doc)
+    print("...Updated recomendations...")

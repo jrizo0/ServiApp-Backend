@@ -4,9 +4,10 @@ from .jobs import get_recomendaciones
 
 class RecomendacionesConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = 'recomendaciones'
+    name = "recomendaciones"
 
-    # def ready(self):
-    #     get_recomendaciones()
-        # from . import updater
-        # updater.start_test()
+    def ready(self):
+        from . import updater
+
+        # updater.start()
+        # get_recomendaciones()

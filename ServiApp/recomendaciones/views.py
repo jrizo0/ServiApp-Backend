@@ -24,12 +24,18 @@ API_Ventas = settings.SA_API_URL + "/ventas"
 
 class RecomendacionesAPIView(viewsets.GenericViewSet):
 
-    def get_queryset(self):
-        return "todo"
+    def get_queryset(self, cart):
+        recommendations = db.collection("Recomendacion").where("antecedents", "==", cart).get()
+        if len(recommendations) == 0:
+            return []
+        res = recommendations[0].to_dict()
+        return res
 
     # @method_decorator(vary_on_headers("Authorization"))
     # @method_decorator(vary_on_cookie)
     # @method_decorator(cache_page(60 * 1))
     def retrieve(self, request):
-        return Response(self.get_queryset())
+        cart = request.data
+        prods = [p["id"] for p in cart["Productos"]]
+        return Response(self.get_queryset(prods))
 
