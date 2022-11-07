@@ -47,12 +47,14 @@ def get_recomendaciones():
 
 
 def reset_fs(data):
+    data = data.loc[:, ["antecedents", "consequents", "confidence"]].to_dict("index")
+    print("total recomendaciones a escribir", len(data.values()))
+
     docs = db.collection("Recomendaciones").get()
     for doc in docs:
         key = doc.id
         db.collection("Recomendaciones").document(key).delete()
 
-    data = data.loc[:, ["antecedents", "consequents", "confidence"]].to_dict("index")
     for i, row in enumerate(data.values()):
         if row["confidence"] != 1 or i == 15000:
             continue
