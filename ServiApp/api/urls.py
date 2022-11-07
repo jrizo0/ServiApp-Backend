@@ -1,5 +1,4 @@
 from django.urls import path, include
-# from . import views
 
 urlpatterns = [
     path('productos/', include('productos.urls')),
@@ -8,4 +7,5 @@ urlpatterns = [
     path('ordenes/', include('ordenes.urls')),
     path('carros/', include('carros.urls')),
     path('admin/', include('admin.urls')),
+    path('recomendaciones/', include('recomendaciones.urls')),
 ]

@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-!=kd7%6m4zv7cq_mae(jitb#d+m_#1rfaq)w%_#%t!p+^!ty@x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -32,7 +32,6 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'recomendaciones.apps.RecomendacionesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'django_extensions',
+    'recomendaciones.apps.RecomendacionesConfig',
+    # 'django_extensions',
 ]
 
 GRAPH_MODELS = {
@@ -86,26 +86,26 @@ WSGI_APPLICATION = 'ServiApp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'mssql',
-#         'NAME': 'ServiciosAlimentacion',
-#         'USER': 'sa',
-#         'PASSWORD': 'Password1234!',
-#         'HOST': '127.0.0.1',
-#         'PORT': '',
-#         'OPTIONS': {
-#             'driver': 'ODBC Driver 17 for SQL Server',
-#         },
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'mssql',
+        'NAME': 'ServiciosAlimentacion',
+        'USER': 'saadmin',
+        'PASSWORD': 'SA-Password!1234',
+        'HOST': 'serviciosalimentacion.c4bvv72u4h29.us-east-1.rds.amazonaws.com',
+        'PORT': '1433',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+        },
+    }
+}
 
 CACHES = {
     "default": {
