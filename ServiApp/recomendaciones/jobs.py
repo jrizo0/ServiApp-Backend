@@ -53,8 +53,8 @@ def reset_fs(data):
         db.collection("Recomendaciones").document(key).delete()
 
     data = data.loc[:, ["antecedents", "consequents", "confidence"]].to_dict("index")
-    for row in data.values():
-        if row["confidence"] != 1:
+    for i, row in enumerate(data.values()):
+        if row["confidence"] != 1 or i == 15000:
             continue
         new_doc = {
             "antecedents": list(map(str, row["antecedents"])),
