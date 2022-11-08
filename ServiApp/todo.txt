@@ -36,10 +36,21 @@ Domiciliario:
 - agregar telefono a restaurante fs
 - cambiar direccion arreglar
 
+Recomendaciones:
+  probar recomendaciones deliv, pickup
+
+
+
+
+
 FRONT
   al abrir orden finalizada por delivery f
   calificaciones backbutton falta
   calificaciones rest no sirve 
+
+
+
+
 
 ADMIN
   Usuarios:
@@ -57,3 +68,4 @@ ADMIN
     - read
     update
     delete
+

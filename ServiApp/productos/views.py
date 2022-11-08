@@ -113,6 +113,7 @@ class ProductosAPIView(viewsets.GenericViewSet):
         rests = self.aux_fill_missing_fields(rests, fs_query_cats)
         return Response(rests)
 
+
 def list_rest(id_rest):
     if "20-" in id_rest:
         id_rest = "20"
@@ -128,8 +129,11 @@ def list_rest(id_rest):
             | {"Precio": tarifas_api[prod.id]["precio"]}
         )
     fs_query_cats = db.collection("CategoriaProducto").get()
-    rests = ProductosAPIView.aux_fill_missing_fields(ProductosAPIView, rests, fs_query_cats)
+    rests = ProductosAPIView.aux_fill_missing_fields(
+        ProductosAPIView, rests, fs_query_cats
+    )
     return rests
+
 
 def list_rest_delivery(id_rest):
     if "20-" in id_rest:
@@ -147,3 +151,29 @@ def list_rest_delivery(id_rest):
             | {"Precio": tarifas_api[prod.id]["precio"]}
         )
     return rests
+
+
+def retrieve_info(id_prod, id_rest):
+    prod = db.collection("Producto").document(id_prod).get()
+    if not prod.exists:
+        return {}
+    tarifa = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/")
+    if not tarifa.status_code in [201, 200]:
+        return {}
+    tarifa = tarifa.json()
+    data = {"id": prod.id} | prod.to_dict() | {"Precio": tarifa["precio"]}
+    return data
+
+def retrieve_info_deliv(id_prod, id_rest):
+    prod = db.collection("Producto").document(id_prod).get()
+    if not prod.exists:
+        return {}
+    tarifa_rest = requests.get(f"{API_Tarifas}/{id_rest}/{id_prod}/")
+    if not tarifa_rest.status_code in [201, 200]:
+        return {}
+    tarifa_del = requests.get(f"{API_Tarifas}/3/{id_prod}/")
+    if not tarifa_del.status_code in [201, 200]:
+        return {}
+    tarifa_del = tarifa_del.json()
+    data = {"id": prod.id} | prod.to_dict() | {"Precio": tarifa_del["precio"]}
+    return data
