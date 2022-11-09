@@ -16,13 +16,13 @@ def schedule_api():
 def get_recomendaciones():
     ventas = pd.read_csv(
         # "https://www.dropbox.com/s/m1sfxzidetqwl6o/ventasDtServiApp.csv?dl=1",
-        "https://www.dropbox.com/s/2yyzpcrzwk5zhgo/ventasDtServiApp3.csv?dl=1",
+        "https://www.dropbox.com/s/ux7459uratbm887/VentasMeses2022Extraido.csv?dl=1",
         sep=";",
         encoding="utf-8",
         decimal=".",
         # dtype={"Transaccion": "str", "CodArticulo": np.int32, "Descripcion": "str", "UnidadesTotal": np.int32, "Precio": np.float64}
         low_memory=False,
-        # nrows=10,
+        nrows=150000,
     )
     my_basket = ventas.pivot_table(
         index="Transaccion",
@@ -42,7 +42,7 @@ def get_recomendaciones():
     rules = association_rules(frequent_items, metric="lift", min_threshold=1)
     rules.sort_values("confidence", ascending=False, inplace=True)
     # print(rules)
-    # print(len(rules))
+    print(len(rules))
     reset_fs(rules)
 
 
@@ -56,8 +56,10 @@ def reset_fs(data):
         db.collection("Recomendaciones").document(key).delete()
 
     for i, row in enumerate(data.values()):
-        if row["confidence"] != 1 or i == 15000:
-            continue
+        if i >= 5000:
+            return
+        # if row["confidence"] != 0.5:
+        #     continue
         new_doc = {
             "antecedents": list(map(str, row["antecedents"])),
             "consequents": list(map(str, row["consequents"])),
