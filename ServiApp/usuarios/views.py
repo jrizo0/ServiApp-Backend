@@ -64,7 +64,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
         same_cards = (
             db.collection("Tarjeta")
             .where("Usuario", "==", uid)
-            .where("NumeroTarjeta", "==", request.data["NumeroTarjeta"])
+            .where("NumeroTarjeta", "==", str(request.data["NumeroTarjeta"]))
             .get()
         )
         if len(same_cards) > 0:
@@ -89,7 +89,7 @@ class UsuarioAPIView(viewsets.GenericViewSet):
 
     def delete_card(self, request):
         uid = self.request.query_params.get("uid")
-        card_number = request.data["NumeroTarjeta"]
+        card_number = str(request.data["NumeroTarjeta"])
         q_cards = db.collection("Tarjeta").document(card_number).get()
         if not q_cards.exists:
             return Response(
