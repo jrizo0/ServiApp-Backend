@@ -108,7 +108,7 @@ class RestaurantsAPIView(viewsets.GenericViewSet):
             "Telefono": request.data["Telefono"],
             "TiempoEntrega": request.data["TiempoEntrega"],
         }
-        db.collection("Restaurante").document(request.data["id"]).set(info_fs)
+        db.collection("Restaurante").document(str(request.data["id"])).set(info_fs)
         return Response(info_fs)
 
     def update(self, request, id):
@@ -142,7 +142,7 @@ class ProductsAPIView(viewsets.GenericViewSet):
             "Descripcion": request.data["Descripcion"],
             "Imagen": request.data["Imagen"],
         }
-        db.collection("Producto").document(request.data["id"]).set(info_fs)
+        db.collection("Producto").document(str(request.data["id"])).set(info_fs)
         return Response(info_fs)
 
     def update(self, request, id):
