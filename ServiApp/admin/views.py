@@ -74,11 +74,40 @@ class UsersAPIView(viewsets.GenericViewSet):
         db.collection("Usuario").document(uid).set(info_fs)
         return Response(info_fs)
 
-    def update(self, request, uid):
-        return Response("TO-DO")
+    def update(self, request):
+        uid = self.request.query_params.get("uid")
+        user = db.collection("Usuario").document(uid).get()
+        if not user.exists:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "Usuario no encontrado"},
+            )
+        new_info = {}
+        if "nombrecliente" in request.data:
+            new_info["nombrecliente"] = request.data["nombrecliente"]
+        if "e_mail" in request.data:
+            new_info["e_mail"] = request.data["e_mail"]
+        if "DeviceToken" in request.data:
+            new_info["DeviceToken"] = request.data["DeviceToken"]
+        if "Rol" in request.data:
+            new_info["Rol"] = request.data["Rol"]
+        if "Telefono" in request.data:
+            new_info["Telefono"] = request.data["Telefono"]
+        if "Restaurante" in request.data:
+            new_info["Restaurante"] = request.data["Restaurante"]
+        db.collection("Usuario").document(uid).update(new_info)
+        user = db.collection("Usuario").document(uid).get().to_dict()
+        return Response(user)
 
     def remove(self, request, uid):
-        return Response("TO-DO")
+        user = db.collection("Usuario").document(uid).get()
+        if not user.exists:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "Usuario no encontrado"},
+            )
+        db.collection("Usuario").document(uid).delete()
+        return Response("Usuario eliminado")
 
 
 class RestaurantsAPIView(viewsets.GenericViewSet):
@@ -112,10 +141,44 @@ class RestaurantsAPIView(viewsets.GenericViewSet):
         return Response(info_fs)
 
     def update(self, request, id):
-        return Response("TO-DO")
+        rest = db.collection("Restaurante").document(id).get()
+        if not rest.exists:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "Restaurante no encontrado"},
+            )
+        new_info = {}
+        if "Nombre" in request.data:
+            new_info["Nombre"] = request.data["Nombre"]
+        if "Categoria" in request.data:
+            new_info["Categoria"] = request.data["Categoria"]
+        if "Descripcion" in request.data:
+            new_info["Descripcion"] = request.data["Descripcion"]
+        if "Estado" in request.data:
+            new_info["Estado"] = request.data["Estado"]
+        if "Horario" in request.data:
+            new_info["Horario"] = request.data["Horario"]
+        if "Imagen" in request.data:
+            new_info["Imagen"] = request.data["Imagen"]
+        if "Localizacion" in request.data:
+            new_info["Localizacion"] = request.data["Localizacion"]
+        if "Telefono" in request.data:
+            new_info["Telefono"] = request.data["Telefono"]
+        if "TiempoEntrega" in request.data:
+            new_info["TiempoEntrega"] = request.data["TiempoEntrega"]
+        db.collection("Restaurante").document(id).update(new_info)
+        rest = db.collection("Restaurante").document(id).get().to_dict()
+        return Response(rest)
 
     def remove(self, request, id):
-        return Response("TO-DO")
+        rest = db.collection("Restaurante").document(id).get()
+        if not rest.exists:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "Restaurante no encontrado"},
+            )
+        db.collection("Restaurante").document(id).delete()
+        return Response("Restaurante eliminado")
 
 
 class ProductsAPIView(viewsets.GenericViewSet):
@@ -146,7 +209,31 @@ class ProductsAPIView(viewsets.GenericViewSet):
         return Response(info_fs)
 
     def update(self, request, id):
-        return Response("TO-DO")
+        prod = db.collection("Producto").document(id).get()
+        if not prod.exists:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "Producto no encontrado"},
+            )
+        new_info = {}
+        if "Nombre" in request.data:
+            new_info["Nombre"] = request.data["Nombre"]
+        if "Categoria" in request.data:
+            new_info["Categoria"] = request.data["Categoria"]
+        if "Descripcion" in request.data:
+            new_info["Descripcion"] = request.data["Descripcion"]
+        if "Imagen" in request.data:
+            new_info["Imagen"] = request.data["Imagen"]
+        db.collection("Producto").document(id).update(new_info)
+        prod = db.collection("Producto").document(id).get().to_dict()
+        return Response(prod)
 
     def remove(self, request, id):
-        return Response("TO-DO")
+        prod = db.collection("Producto").document(id).get()
+        if not prod.exists:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "Producto no encontrado"},
+            )
+        db.collection("Producto").document(id).delete()
+        return Response("Producto eliminado")
