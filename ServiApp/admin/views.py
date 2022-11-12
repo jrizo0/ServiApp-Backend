@@ -79,8 +79,7 @@ class UsersAPIView(viewsets.GenericViewSet):
         db.collection("Usuario").document(uid).set(info_fs)
         return Response(info_fs)
 
-    def update(self, request):
-        uid = self.request.query_params.get("id")
+    def update(self, request, uid):
         user = db.collection("Usuario").document(uid).get()
         if not user.exists:
             return Response(
