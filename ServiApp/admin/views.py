@@ -37,6 +37,12 @@ class UsersAPIView(viewsets.GenericViewSet):
     def list(self, request):
         return Response(self.get_queryset())
 
+    def retrieve(self, request):
+        id = self.request.query_params.get("id")
+        user = db.collection("Usuario").document(id).get()
+        data = {"id": user.id | user.to_dict()}
+        return Response(data)
+
     def create_domiciliary(self, request):
         usu_form = request.data
         uid = auth.create_user(
@@ -75,7 +81,7 @@ class UsersAPIView(viewsets.GenericViewSet):
         return Response(info_fs)
 
     def update(self, request):
-        uid = self.request.query_params.get("uid")
+        uid = self.request.query_params.get("id")
         user = db.collection("Usuario").document(uid).get()
         if not user.exists:
             return Response(
@@ -117,6 +123,12 @@ class RestaurantsAPIView(viewsets.GenericViewSet):
 
     def list(self, request):
         return Response(self.get_queryset())
+
+    def retrieve(self, request):
+        id = self.request.query_params.get("id")
+        rest = db.collection("Restaurante").document(id).get()
+        data = {"id": rest.id | rest.to_dict()}
+        return Response(data)
 
     def create(self, request):
         info_api = {
@@ -188,6 +200,12 @@ class ProductsAPIView(viewsets.GenericViewSet):
 
     def list(self, request):
         return Response(self.get_queryset())
+
+    def retrieve(self, request):
+        id = self.request.query_params.get("id")
+        prod = db.collection("Producto").document(id).get()
+        data = {"id": prod.id | prod.to_dict()}
+        return Response(data)
 
     def create(self, request):
         info_api = {
