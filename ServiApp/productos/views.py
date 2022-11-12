@@ -114,11 +114,11 @@ class ProductosAPIView(viewsets.GenericViewSet):
         return Response(rests)
 
 
-def list_rest(id_rest):
+def list_rest(id_rest, fs_query_prods):
     if "20-" in id_rest:
         id_rest = "20"
     tarifas_api = requests.get(f"{API_Tarifas}/tarifav/{id_rest}/").json()
-    fs_query_prods = db.collection("Producto").get()
+    # fs_query_prods = db.collection("Producto").get()
     rests = []
     for prod in fs_query_prods:
         if not prod.id in tarifas_api:
@@ -135,12 +135,12 @@ def list_rest(id_rest):
     return rests
 
 
-def list_rest_delivery(id_rest):
+def list_rest_delivery(id_rest, fs_query_prods):
     if "20-" in id_rest:
         id_rest = "20"
     tarifas_api = requests.get(f"{API_Tarifas}/tarifav/{id_rest}/").json()
     tarifas_domi_api = requests.get(f"{API_Tarifas}/tarifav/3/").json()
-    fs_query_prods = db.collection("Producto").get()
+    # fs_query_prods = db.collection("Producto").get()
     rests = []
     for prod in fs_query_prods:
         if not prod.id in tarifas_api or not prod.id in tarifas_domi_api:

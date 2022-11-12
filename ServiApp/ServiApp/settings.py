@@ -86,26 +86,26 @@ WSGI_APPLICATION = 'ServiApp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'ServiciosAlimentacion',
-        'USER': 'saadmin',
-        'PASSWORD': 'SA-Password!1234',
-        'HOST': 'serviciosalimentacion.c4bvv72u4h29.us-east-1.rds.amazonaws.com',
-        'PORT': '1433',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'mssql',
+#         'NAME': 'ServiciosAlimentacion',
+#         'USER': 'saadmin',
+#         'PASSWORD': 'SA-Password!1234',
+#         'HOST': 'serviciosalimentacion.c4bvv72u4h29.us-east-1.rds.amazonaws.com',
+#         'PORT': '1433',
+#         'OPTIONS': {
+#             'driver': 'ODBC Driver 17 for SQL Server',
+#         },
+#     }
+# }
 
 CACHES = {
     "default": {

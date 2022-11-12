@@ -57,11 +57,12 @@ class RestauranteAPIView(viewsets.GenericViewSet):
         fs_query_cats = db.collection("CategoriaRestaurante").get()
         rests = [{"id": doc.id} | doc.to_dict() for doc in fs_query_rests]
         rests = self.aux_fill_missing_fields(rests, fs_query_cats)
+        fs_query_prods = db.collection("Producto").get()
         for i in range(len(rests)):
             rest_id = rests[i]["id"]
             aforo = requests.get(f"{API_Aforo}/get/{rest_id}/").json()
             rests[i] = rests[i] | aforo
-            rests[i]["Productos"] = list_rest(rest_id)
+            rests[i]["Productos"] = list_rest(rest_id, fs_query_prods)
             if len(rests[i]["Productos"]) == 0:
                 continue
             aforo = requests.get(f"{API_Aforo}/get/{rest_id}/").json()
@@ -70,7 +71,7 @@ class RestauranteAPIView(viewsets.GenericViewSet):
         return rests
 
     # @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(60 * 60))
+    @method_decorator(cache_page(60 * 600))
     def list(self, request):
         return Response(self.get_queryset())
 
@@ -83,9 +84,10 @@ class RestauranteAPIView(viewsets.GenericViewSet):
         fs_query_cats = db.collection("CategoriaRestaurante").get()
         rests = [{"id": doc.id} | doc.to_dict() for doc in fs_query_rests]
         rests = self.aux_fill_missing_fields(rests, fs_query_cats)
+        fs_query_prods = db.collection("Producto").get()
         for i in range(len(rests)):
             rest_id = rests[i]["id"]
-            rests[i]["Productos"] = list_rest_delivery(rest_id)
+            rests[i]["Productos"] = list_rest_delivery(rest_id, fs_query_prods)
             if len(rests[i]["Productos"]) == 0:
                 continue
             aforo = requests.get(f"{API_Aforo}/get/{rest_id}/").json()
@@ -94,7 +96,7 @@ class RestauranteAPIView(viewsets.GenericViewSet):
         return rests
 
     # @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(60 * 60))
+    @method_decorator(cache_page(60 * 600))
     def list_delivery(self, request):
         return Response(self.get_queryset_delivery(request))
 
