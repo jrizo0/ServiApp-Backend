@@ -37,10 +37,9 @@ class UsersAPIView(viewsets.GenericViewSet):
     def list(self, request):
         return Response(self.get_queryset())
 
-    def retrieve(self, request):
-        id = self.request.query_params.get("id")
+    def retrieve(self, request, uid):
         user = db.collection("Usuario").document(id).get()
-        data = {"id": user.id | user.to_dict()}
+        data = {"id": user.id} | user.to_dict()
         return Response(data)
 
     def create_domiciliary(self, request):
@@ -124,10 +123,9 @@ class RestaurantsAPIView(viewsets.GenericViewSet):
     def list(self, request):
         return Response(self.get_queryset())
 
-    def retrieve(self, request):
-        id = self.request.query_params.get("id")
+    def retrieve(self, request, id):
         rest = db.collection("Restaurante").document(id).get()
-        data = {"id": rest.id | rest.to_dict()}
+        data = {"id": rest.id} | rest.to_dict()
         return Response(data)
 
     def create(self, request):
@@ -201,10 +199,9 @@ class ProductsAPIView(viewsets.GenericViewSet):
     def list(self, request):
         return Response(self.get_queryset())
 
-    def retrieve(self, request):
-        id = self.request.query_params.get("id")
+    def retrieve(self, request, id):
         prod = db.collection("Producto").document(id).get()
-        data = {"id": prod.id | prod.to_dict()}
+        data = {"id": prod.id} | prod.to_dict()
         return Response(data)
 
     def create(self, request):
