@@ -200,7 +200,8 @@ class ProductsAPIView(viewsets.GenericViewSet):
 
     def retrieve(self, request, id):
         prod = db.collection("Producto").document(id).get()
-        data = {"id": prod.id} | prod.to_dict()
+        prod_api = requests.get(f"{API_Productos}/{id}/").json()
+        data = {"id": prod.id} | prod.to_dict() | prod_api
         return Response(data)
 
     def create(self, request):
