@@ -32,7 +32,7 @@ class UsersAPIView(viewsets.GenericViewSet):
             .where("Rol", "in", ["Domiciliario", "Restaurante"])
             .get()
         )
-        return [{"id": u.id} | u.to_dict() for u in docs]
+        return [{"id": u.i} | u.to_dict() for u in docs]
 
     def list(self, request):
         return Response(self.get_queryset())
@@ -123,9 +123,9 @@ class RestaurantsAPIView(viewsets.GenericViewSet):
             "idtarifav": request.data["id"],
             "descripcion": request.data["Nombre"],
         }
-        info_api = requests.post(f"{API_Restaurantes}/", json=info_api)
-        if not info_api.status_code in [201, 200]:
-            raise ValidationError()
+        # info_api = requests.post(f"{API_Restaurantes}/", json=info_api)
+        # if not info_api.status_code in [201, 200]:
+        #     raise ValidationError()
         info_fs = {
             "Nombre": request.data["Nombre"],
             "Categoria": request.data["Categoria"],
@@ -196,9 +196,9 @@ class ProductsAPIView(viewsets.GenericViewSet):
             "dpto": request.data["dpto"],
             "seccion": request.data["seccion"],
         }
-        info_api = requests.post(f"{API_Productos}/", json=info_api)
-        if not info_api.status_code in [201, 200]:
-            raise ValidationError()
+        # info_api = requests.post(f"{API_Productos}/", json=info_api)
+        # if not info_api.status_code in [201, 200]:
+            # raise ValidationError()
         info_fs = {
             "Nombre": request.data["Nombre"],
             "Categoria": request.data["Categoria"],
