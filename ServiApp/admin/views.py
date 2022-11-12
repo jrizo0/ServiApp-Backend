@@ -38,7 +38,7 @@ class UsersAPIView(viewsets.GenericViewSet):
         return Response(self.get_queryset())
 
     def retrieve(self, request, uid):
-        user = db.collection("Usuario").document(id).get()
+        user = db.collection("Usuario").document(uid).get()
         data = {"id": user.id} | user.to_dict()
         return Response(data)
 
