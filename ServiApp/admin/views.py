@@ -32,7 +32,7 @@ class UsersAPIView(viewsets.GenericViewSet):
             .where("Rol", "in", ["Domiciliario", "Restaurante"])
             .get()
         )
-        return [{"id": u.i} | u.to_dict() for u in docs]
+        return [{"id": u.id} | u.to_dict() for u in docs]
 
     def list(self, request):
         return Response(self.get_queryset())
