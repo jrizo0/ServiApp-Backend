@@ -25,20 +25,20 @@ prod_remove = ProductsAPIView.as_view({"delete": "remove"})
 
 urlpatterns = [
     path("usuarios/", user_list),
-    path("usuarios/<str:uid>/", user_retrieve),
+    path("usuarios/get/<str:uid>/", user_retrieve),
     path("usuarios/domiciliario/", user_create_domiciliary),
     path("usuarios/restaurante/", user_create_restaurant),
     path("usuarios/update/<str:uid>/", user_update),
     path("usuarios/remove/<str:uid>/", user_remove),
 
     path("restaurantes/", rest_list),
-    path("restaurantes/<str:id>/", rest_retrieve),
+    path("restaurantes/get/<str:id>/", rest_retrieve),
     path("restaurantes/create/", rest_create),
     path("restaurantes/update/<str:id>/", rest_update),
     path("restaurantes/remove/<str:id>/", rest_remove),
 
     path("productos/", prod_list),
-    path("productos/<str:id>/", prod_retrieve),
+    path("productos/get/<str:id>/", prod_retrieve),
     path("productos/create/", prod_create),
     path("productos/update/<str:id>/", prod_update),
     path("productos/remove/<str:id>/", prod_remove),
