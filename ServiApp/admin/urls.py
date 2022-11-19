@@ -6,6 +6,7 @@ app_name = "admin"
 
 user_list = UsersAPIView.as_view({"get": "list"})
 user_retrieve = UsersAPIView.as_view({"get": "retrieve"})
+user_create_admin = UsersAPIView.as_view({"post": "create_admin"})
 user_create_domiciliary = UsersAPIView.as_view({"post": "create_domiciliary"})
 user_create_restaurant = UsersAPIView.as_view({"post": "create_restaurant"})
 user_update = UsersAPIView.as_view({"put": "update"})
@@ -26,6 +27,7 @@ prod_remove = ProductsAPIView.as_view({"delete": "remove"})
 urlpatterns = [
     path("usuarios/", user_list),
     path("usuarios/get/<str:uid>/", user_retrieve),
+    path("usuarios/admin/", user_create_admin),
     path("usuarios/domiciliario/", user_create_domiciliary),
     path("usuarios/restaurante/", user_create_restaurant),
     path("usuarios/update/<str:uid>/", user_update),

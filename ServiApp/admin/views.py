@@ -42,6 +42,20 @@ class UsersAPIView(viewsets.GenericViewSet):
         data = {"id": user.id} | user.to_dict()
         return Response(data)
 
+    def create_admin(self, request):
+        usu_form = request.data
+        uid = auth.create_user(
+            email=usu_form["e_mail"],
+            password=usu_form["password"],
+        ).uid
+        info_fs = {
+            "nombrecliente": usu_form["nombrecliente"],
+            "e_mail": usu_form["e_mail"],
+            "Rol": "Administrador",
+        }
+        db.collection("Usuario").document(uid).set(info_fs)
+        return Response(info_fs)
+
     def create_domiciliary(self, request):
         usu_form = request.data
         uid = auth.create_user(
