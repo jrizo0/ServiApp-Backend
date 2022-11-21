@@ -54,7 +54,7 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         orders_fs = db.collection("Orden")
         res = []
         if delivery != 2:
-            orders_fs = orders_fs.where("Domicilio", "==", delivery == 1)
+            orders_fs = orders_fs.where("Domiciliario", "==", delivery == 1)
         orders_fs = orders_fs.where(role, "==", uid)
         orders_fs = orders_fs.get()
         for order in orders_fs:
