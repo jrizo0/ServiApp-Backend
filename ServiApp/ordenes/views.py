@@ -65,7 +65,6 @@ class OrdenesAPIView(viewsets.GenericViewSet):
             rest = {"id": rest.id} | rest.to_dict()
             order = {"id": order.id} | order_inf | {"Restaurante": rest}
             res.append(order)
-
         res.sort(key=lambda r: r["Fecha"])
         res = res[::-1]
         return Response(res)
