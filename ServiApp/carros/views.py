@@ -48,8 +48,7 @@ class CartAPIView(viewsets.GenericViewSet):
         return Response(
             {
                 "Domicilio": user_fs["DomicilioCarro"],
-                "Restaurante": {"id": user_fs["RestauranteCarro"]}
-                | rest_info.to_dict(),
+                "Restaurante": {"id": user_fs["RestauranteCarro"]} | rest_info,
                 "Productos": cart_w_info,
             }
         )
