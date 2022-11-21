@@ -33,12 +33,18 @@ class CartAPIView(viewsets.GenericViewSet):
             return Response({})
         cart_w_info = []
         for id_prod, item_cart_info in user_fs["Carro"].items():
-            prod_info = db.collection("Producto").document(id_prod).get().to_dict()
+            prod_info = db.collection("Producto").document(id_prod).get()
+            if not prod_info.exists:
+                continue
+            prod_info = prod_info.to_dict()
             cart_w_info.append({"id": id_prod} | item_cart_info | prod_info)
 
         rest_info = (
             db.collection("Restaurante").document(user_fs["RestauranteCarro"]).get()
         )
+        if not rest_info.exists:
+            return Response("Error")
+        rest_info = rest_info.to_dict()
         return Response(
             {
                 "Domicilio": user_fs["DomicilioCarro"],

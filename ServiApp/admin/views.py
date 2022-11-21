@@ -1,22 +1,12 @@
-from firebase_admin import firestore
 from rest_framework import viewsets
 
 import requests
-import json
-from datetime import datetime
 
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import SAFE_METHODS, BasePermission
-from rest_framework.serializers import ValidationError
 
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie, vary_on_headers
-
-from ServiApp.firebase import db, fb_valid_req_token_uid, auth, dbrt
+from ServiApp.firebase import db, auth
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
 
 API_Clientes = settings.SA_API_URL + "/clientes"
 API_Tarifas = settings.SA_API_URL + "/tarifas"
@@ -227,7 +217,7 @@ class ProductsAPIView(viewsets.GenericViewSet):
         }
         # info_api = requests.post(f"{API_Productos}/", json=info_api)
         # if not info_api.status_code in [201, 200]:
-            # raise ValidationError()
+        # raise ValidationError()
         info_fs = {
             "Nombre": request.data["Nombre"],
             "Categoria": request.data["Categoria"],
