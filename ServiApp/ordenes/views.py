@@ -55,8 +55,13 @@ class OrdenesAPIView(viewsets.GenericViewSet):
         res = []
         if delivery != 2:
             orders_fs = orders_fs.where("Domiciliario", "==", delivery == 1)
-        orders_fs = orders_fs.where(role, "==", uid)
-        orders_fs = orders_fs.get()
+        if role == "Restaurante":
+            user_inf = db.collection("Usuario").document(uid).get().to_dict()
+            rest_id = user_inf["Restaurante"]
+            orders_fs = orders_fs.where(role, "==", rest_id).get()
+        else:
+            orders_fs = orders_fs.where(role, "==", uid).get()
+        # orders_fs = orders_fs.get()
         for order in orders_fs:
             order_inf = order.to_dict()
             rest = db.collection("Restaurante").document(order_inf["Restaurante"]).get()
